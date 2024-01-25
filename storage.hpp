@@ -115,7 +115,6 @@ namespace storage {
 
             // write in 1024 byte chunks
             for (uint32_t i = 0; i < ((max_entries * sizeof(entry)) / 1024); i++) {
-
                 std::span<const uint8_t> p = {
                     (reinterpret_cast<const uint8_t*>(entries.data()) + i * 1024), 1024
                 };

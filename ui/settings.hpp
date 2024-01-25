@@ -15,6 +15,7 @@ namespace menu {
             config = 0,
             time,
             calibration,
+            mouse,
 
             // should always be at the end
             count
@@ -30,6 +31,7 @@ namespace menu {
             "usb mode",
             "set time",
             "set cal",
+            "usb jiggler",
         };
 
         // menu that can draw all the labels
@@ -54,6 +56,9 @@ namespace menu {
                     case item::config:
                         screen_base::buffer.change(screen_id::config);
                         break;
+                    case item::mouse:
+                        screen_base::buffer.change(screen_id::mouse);
+                        break;                    
                 }
             }
             else if (buttons.enter == input::state::long_pressed) {

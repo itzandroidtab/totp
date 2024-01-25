@@ -11,7 +11,7 @@
 
 namespace menu::detail {
     const char* strnstr(const char *haystack, const char *needle, size_t len) {
-        const size_t needle_len = strnlen(needle, len);
+        const size_t needle_len = klib::string::strlen(needle);
 
         if (!needle_len) {
             return haystack;

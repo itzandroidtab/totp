@@ -9,6 +9,7 @@
 #include "ui/time.hpp"
 #include "ui/calibration.hpp"
 #include "ui/config.hpp"
+#include "ui/mouse.hpp"
 
 #include "button.hpp"
 #include "storage.hpp"
@@ -23,6 +24,7 @@
 
 #include <klib/usb/device/mass_storage.hpp>
 #include <klib/usb/device/keyboard.hpp>
+#include <klib/usb/device/mouse.hpp>
 
 #include <klib/hardware/display/st7735.hpp>
 #include <klib/hardware/display/st7789.hpp>
@@ -67,6 +69,7 @@ int main() {
 
     // using for the usb driver/device
     using usb_keyboard = target::io::usb<target::io::periph::lqfp_80::usb0, klib::usb::device::keyboard_hid<4>>;
+    using usb_mouse = target::io::usb<target::io::periph::lqfp_80::usb0, klib::usb::device::mouse_hid<4>>;
     using usb_massstorage = target::io::usb<target::io::periph::lqfp_80::usb0, 
         klib::usb::device::mass_storage<fat_helper>
     >;
@@ -160,6 +163,7 @@ int main() {
         fb_t, storage, fat_helper, 
         usb_keyboard, usb_massstorage
     > config = {};
+    menu::mouse<fb_t, usb_keyboard, usb_mouse> mouse = {};
 
     // array with all the app screens
     menu::screen<fb_t> *const screens[] = {
@@ -169,6 +173,7 @@ int main() {
         &time,
         &calibration,
         &config,
+        &mouse,
         &numeric_popup,
     };
 

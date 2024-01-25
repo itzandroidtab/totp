@@ -38,6 +38,7 @@ namespace menu {
         char epoch_buf[12] = {};
         char current_token_buf[7] = {};
         char next_token_buf[7] = {};
+        char seconds_left_buf[7] = {};
 
         constexpr static uint32_t step_size = 2;
         using lookuptable = klib::lookuptable<360 / step_size, int>;
@@ -157,6 +158,9 @@ namespace menu {
                 // update the epoch buffer
                 klib::string::itoa(last_epoch.value, epoch_buf);
 
+                // update the seconds left in this cycle
+                klib::string::itoa(30 - (last_epoch.value % 30), seconds_left_buf);
+
                 // the time has changed. Mark the totp as changed
                 // to force a update on the buffers
                 totp_changed = true;
@@ -265,6 +269,16 @@ namespace menu {
             for (uint32_t i = 0; i < sizeof(lookuptable_sin) / sizeof(lookuptable_sin[0]); i++) {
                 draw_timer(frame_buffer, position, runtime, lookuptable_sin[i], lookuptable_cos[i]);
             }
+
+            // draw the time left in seconds in the circle
+            screen<FrameBuffer>::small_text.template draw<FrameBuffer>(
+                frame_buffer, seconds_left_buf, 
+                klib::vector2i{
+                    (204 + 1) - static_cast<int32_t>((klib::string::strlen(seconds_left_buf) * screen<FrameBuffer>::small_font.width) / 2), 
+                    (68 + 1) - (screen<FrameBuffer>::small_font.height / 2)
+                } - offset.cast<int32_t>(), 
+                klib::graphics::white
+            );
         }
     };
 }

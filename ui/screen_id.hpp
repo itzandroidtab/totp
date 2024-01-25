@@ -8,6 +8,7 @@ namespace menu {
         time,
         calibration,
         config,
+        mouse,
         numeric_popup,
     };
 }
