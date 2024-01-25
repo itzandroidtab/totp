@@ -105,7 +105,7 @@ namespace menu {
                 case steps::month:
                     popup.configure(
                         "Month", RtcPeriph::port->MONTH, 
-                        2020, 2099, [&](int32_t value){next(value);},
+                        1, 12, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
                     break;
