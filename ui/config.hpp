@@ -504,6 +504,10 @@ namespace menu {
 
                     return;
                 }
+                else {
+                    // we have a valid sector. Move the next sector
+                    next_sector += sectors;
+                }
             }
 
             // get all the entries
