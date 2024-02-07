@@ -113,10 +113,10 @@ namespace menu {
             );
 
             // draw using the small font
-            screen_base::small_text.template draw<FrameBuffer>(
+            screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 "koon.io", 
-                klib::vector2i{240 - (7 * screen_base::small_font.width), 120} - offset.cast<int32_t>(), 
+                klib::vector2i{240 - (7 * screen_base::small_font::width), 120} - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
         }

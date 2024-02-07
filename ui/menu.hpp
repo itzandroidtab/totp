@@ -75,8 +75,8 @@ namespace menu {
             data(args)
         {}
 
-        template <typename T, typename FrameBuffer, uint32_t BufferSize>
-        void draw(T& writer, FrameBuffer& fb, const klib::vector2u& offset, const uint32_t selected, char option[Count][BufferSize],
+        template <typename Font, typename FrameBuffer, uint32_t BufferSize>
+        void draw(FrameBuffer& fb, const klib::vector2u& offset, const uint32_t selected, char option[Count][BufferSize],
             const klib::graphics::color foreground, const klib::graphics::color background, const bool hidden[Count] = {})
         {
             uint32_t onscreen_index = 0;
@@ -112,7 +112,7 @@ namespace menu {
 
                 // draw the text on the screen
                 // write the text to the display
-                writer.draw(
+                Font::template draw(
                     fb, data[i], 
                     klib::vector2i{
                         line_boarder_pixels, 

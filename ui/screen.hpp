@@ -81,12 +81,12 @@ namespace menu {
         static inline screen_buffer<8> buffer = {};
 
         // small text for in the screens
-        constexpr static auto small_font = klib::graphics::ascii_font_8x8();
-        static inline auto small_text = klib::graphics::string(small_font);
+        using small_font = klib::graphics::ascii_font_8x8;
+        using small_text = klib::graphics::string<small_font>;
 
         // large text for in the screens
-        constexpr static auto large_font = klib::graphics::ascii_font_16x16();
-        static inline auto large_text = klib::graphics::string(large_font);
+        using large_font = klib::graphics::ascii_font_16x16;
+        using large_text = klib::graphics::string<large_font>;
 
         /**
          * @brief Draws a rectangle

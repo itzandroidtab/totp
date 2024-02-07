@@ -729,7 +729,7 @@ namespace menu {
             frame_buffer.clear(klib::graphics::black);
 
             // draw the current token using the large font
-            screen<FrameBuffer>::large_text.template draw<FrameBuffer>(
+            screen<FrameBuffer>::large_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 "USB mode", 
                 klib::vector2i{60, 60} - offset.cast<int32_t>(), 

@@ -94,8 +94,8 @@ namespace menu {
             char buffer[label_count][sizeof(labels[0])] = {};
 
             // update the labels
-            options.draw(
-                screen_base::large_text, frame_buffer, 
+            options.template draw<typename screen_base::large_text>(
+                frame_buffer, 
                 offset, static_cast<uint8_t>(selection), 
                 buffer, klib::graphics::grey, 
                 klib::graphics::white, {}
