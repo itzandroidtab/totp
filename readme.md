@@ -27,10 +27,11 @@ PCB<br>
 <img src='img/lpc1756_totp.png' width='500'>
 <img src='img/lpc1756_totp_back.png' width='500'>
 
-Additional pictures can be found [here](./img/)
+More pictures can be found [here](./img/)
 
 ### TODO
 * encrypt profiles
+* support for base32 keys
 * support for different intervals
 * support for 8 digit keys
 * add support for more than 32 profiles (needs a rework if more profiles are required. The profiles are copied to ram and there is not enough for more at the moment. If we leave them in flash we can store a lot more)
