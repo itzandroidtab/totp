@@ -142,6 +142,7 @@ int main() {
     using flash = target::io::flash;
 
     // the range where we store the keys is 0x38000 - 0x40000
+    // TODO: use the region from the linkerscript
     constexpr static uint32_t key_start = 0x38000;
     constexpr static uint32_t key_end = 0x40000;
 

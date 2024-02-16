@@ -17,7 +17,8 @@ Memories definitions
 */
 MEMORY
 {
-    rom (rx) : org = 0x00000000 + 8k, len = 256k
+    rom (rx) : org = 0x00000000 + 8k, len = 256k - 8k - 32k
+    profiles (r) : org = 0x00000000 + 256k - 32k, len = 32k
     ram (rwx) : org = 0x10000000, len = 16k
     ram1 (rwx) : org = 0x2007C000, len = 16k
 }

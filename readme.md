@@ -28,6 +28,7 @@ Additional pictures can be found [here](./img/)
 * support for different intervals
 * support for 8 digit keys
 * add support for more than 32 profiles (needs a rework if more profiles are required. The profiles are copied to ram and there is not enough for more at the moment. If we leave them in flash we can store a lot more)
+* support for reading the profile locations from the linkerscript instead of hardcoded
 
 ### Compiling
 TOTP uses [klib](https://github.com/itzandroidtab/klib). This repo can be cloned in the klib project folder. See [build.yml](./.github/workflows/build.yml) for more info on compiling this project.
