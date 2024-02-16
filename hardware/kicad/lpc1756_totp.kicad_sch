@@ -1,0 +1,88 @@
+(kicad_sch (version 20230121) (generator eeschema)
+
+  (uuid 31fe5410-ca0a-4d95-af18-64a974d16858)
+
+  (paper "A4")
+
+  (lib_symbols
+  )
+
+
+  (sheet (at 17.78 33.02) (size 12.7 7.62) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid 377ca2ec-2e56-4458-9f8b-41dfa2c57b36)
+    (property "Sheetname" "Power" (at 17.78 32.3084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "power.kicad_sch" (at 17.78 41.2246 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (property "Field2" "" (at 17.78 33.02 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (instances
+      (project "lpc1756_totp"
+        (path "/31fe5410-ca0a-4d95-af18-64a974d16858" (page "5"))
+      )
+    )
+  )
+
+  (sheet (at 17.78 20.32) (size 12.7 7.62) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid ce057035-2941-478d-8dd4-1c56dcaf16f7)
+    (property "Sheetname" "CPU" (at 17.78 19.6084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "cpu.kicad_sch" (at 17.78 28.5246 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "lpc1756_totp"
+        (path "/31fe5410-ca0a-4d95-af18-64a974d16858" (page "2"))
+      )
+    )
+  )
+
+  (sheet (at 17.78 45.72) (size 12.7 7.62) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid e0d0e861-515b-498d-9dac-3d0e370950b4)
+    (property "Sheetname" "USB" (at 17.78 45.0084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "usb.kicad_sch" (at 17.78 53.9246 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (property "Field2" "" (at 17.78 45.72 0)
+      (effects (font (size 1.27 1.27)) hide)
+    )
+    (instances
+      (project "lpc1756_totp"
+        (path "/31fe5410-ca0a-4d95-af18-64a974d16858" (page "3"))
+      )
+    )
+  )
+
+  (sheet (at 17.78 58.42) (size 12.7 7.62) (fields_autoplaced)
+    (stroke (width 0.1524) (type solid))
+    (fill (color 0 0 0 0.0000))
+    (uuid f5bd7422-a5e2-488e-8bed-07518c81de58)
+    (property "Sheetname" "User" (at 17.78 57.7084 0)
+      (effects (font (size 1.27 1.27)) (justify left bottom))
+    )
+    (property "Sheetfile" "lcd.kicad_sch" (at 17.78 66.6246 0)
+      (effects (font (size 1.27 1.27)) (justify left top))
+    )
+    (instances
+      (project "lpc1756_totp"
+        (path "/31fe5410-ca0a-4d95-af18-64a974d16858" (page "4"))
+      )
+    )
+  )
+
+  (sheet_instances
+    (path "/" (page "1"))
+  )
+)
