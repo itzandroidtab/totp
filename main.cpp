@@ -35,6 +35,7 @@
 
 namespace target = klib::target;
 
+constexpr static klib::time::ms screen_timeout = 60'000;
 constexpr static uint32_t fps_frametime = (1'000'000) / 60;
 
 // implement the throw_bad_function_call so we can use std::function
@@ -186,8 +187,11 @@ int main() {
     // current active framebuffer
     uint8_t current_framebuffer = 0;
 
+    // last time the user pressed a button for the screen timeout
+    auto last_pressed_time = klib::io::systick<>::template get_runtime();
+
     // get the previous time for the delta
-    auto previous_time = klib::io::systick<>::template get_runtime<klib::time::us>();
+    auto previous_time = klib::io::systick<>::get_runtime<klib::time::us>();
 
     // timing for the buttons. To keep track on how long a 
     // button is pressed. We mark everything with the pressed
@@ -206,10 +210,32 @@ int main() {
         const auto current_time = klib::io::systick<>::template get_runtime<klib::time::us>();
 
         // get the buttons
-        const input::buttons buttons = input::get_state(
+        input::buttons buttons = input::get_state(
             current_time - previous_time, flipped, button_timing, 
             {button0::get(), button1::get(), button2::get()}
         );
+
+        // flag if we have reached the screen timeout
+        const bool timeout = klib::io::systick<>::get_runtime() > (last_pressed_time + screen_timeout);
+
+        // check if we have pressed any button
+        if (is_pressed(buttons.up) || is_pressed(buttons.enter) || is_pressed(buttons.down)) {
+            // check if we need to enable the backlight again
+            if (timeout) {
+                // turn on the backlight
+                blk::set<false>();
+
+                // prevent any of the buttons from triggering when we turn on the backlight
+                buttons = {input::state::no_change, input::state::no_change, input::state::no_change};
+            }
+
+            // update the last time we pressed the buttons
+            last_pressed_time = klib::io::systick<>::get_runtime();
+        }
+        else if (timeout) {
+            // turn off the backlight
+            blk::set<true>();
+        }
 
         // check if we have switched screens
         if (current_screen != previous_screen) {
@@ -232,9 +258,6 @@ int main() {
 
         // run the correct screen
         screens[current_screen]->main(current_time - previous_time, buttons);
-
-        // update the previous time
-        previous_time = current_time;
 
         // draw the screen alternating the framebuffers
         for (uint32_t i = 0; i < display::height; i += move_height) {
@@ -265,6 +288,9 @@ int main() {
             // swap the framebuffer we are using
             current_framebuffer ^= 1;
         }
+
+        // update the previous time
+        previous_time = current_time;
 
         const auto end_time = klib::io::systick<>::template get_runtime<klib::time::us>();
 
