@@ -9,12 +9,12 @@ Open source hardware TOTP token. Currently targets the LPC1756, LPC1758 and LPC1
 * support for setting the time
 
 ### Images
-Photos
+Photos<br>
 <img src='img/totp_test.jpg' width='500'>
 <img src='img/full_front0.jpg' width='500'>
 <img src='img/case.jpg' width='500'>
 
-PCB
+PCB<br>
 <img src='img/pcb.jpg' width='500'>
 <img src='img/lpc1756_totp.png' width='500'>
 <img src='img/lpc1756_totp_back.png' width='500'>
