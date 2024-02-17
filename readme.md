@@ -11,6 +11,7 @@ The main screen takes the longest to draw. This is caused by the amount of pixel
 * keys never leave the token after setup
 * enter button types 6 digit key using HID keyboard (any device that supports HID keyboards should work)
 * supports up to 32 profiles
+* rechargable RTC battery
 * USB mode to add/delete profiles using a CSV file
 * support to change the RTC calibration values in the settings
 * support for setting the time
