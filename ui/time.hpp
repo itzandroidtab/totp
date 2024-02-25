@@ -12,7 +12,8 @@ namespace menu {
         using screen_base = screen<FrameBuffer>;
 
         enum class steps: uint8_t {
-            year = 0,
+            timezone = 0,
+            year,
             month,
             day,
             hour,
@@ -27,6 +28,7 @@ namespace menu {
 
         // rtc data
         struct dateinfo {
+            int8_t timezone;
             uint16_t year;
             uint8_t month;
             uint8_t day;
@@ -44,6 +46,9 @@ namespace menu {
         void next(int32_t value) {
             // store the value
             switch (current) {
+                case steps::timezone:
+                    date.timezone = static_cast<int8_t>(value);
+                    break;
                 case steps::year:
                     date.year = static_cast<uint16_t>(value);
                     break;
@@ -62,12 +67,18 @@ namespace menu {
                 case steps::second:
                     date.second = static_cast<uint8_t>(value);
                     
+                    // store the timezone in the rtc registers
+                    RtcPeriph::port->GPREG4 = (
+                        (RtcPeriph::port->GPREG4 & (~0x1f)) | 
+                        static_cast<uint8_t>(date.timezone + 12)
+                    );
+
                     // we are done. Update the RTC time
                     Rtc::set(klib::io::rtc::datetime_to_epoch(
                         date.year, date.month, 
                         date.day, date.hour, 
                         date.minute, date.second
-                    ));
+                    ) - klib::time::s(date.timezone * (60 * 60)));
 
                     // go back one screen to the setings menu
                     screen_base::buffer.back();
@@ -85,26 +96,42 @@ namespace menu {
         }
 
         void cancel() {
-            // reset and go back to the previous screen
-            current = steps::year;
+            if (current == steps::timezone) {
+                // go back to the menu
+                screen_base::buffer.back();
 
-            // go back
-            screen_base::buffer.back();
+                return;
+            }
+
+            // go back one screen
+            current = static_cast<steps>(static_cast<uint32_t>(current) - 1);
         }
 
         void change_screen(const steps current) {
+            // get the current time with the timezone compensation
+            const auto t = klib::io::rtc::epoch_to_datetime(
+                Rtc::get() + klib::time::s(date.timezone * (60 * 60))
+            );            
+
             // get what state we are in
             switch (current) {
+                case steps::timezone:
+                    popup.configure(
+                        "GMT", (RtcPeriph::port->GPREG4 & 0x1f) - 12, 
+                        -12, 14, [&](int32_t value){next(value);},
+                        [&](){cancel();}
+                    );
+                    break;
                 case steps::year:
                     popup.configure(
-                        "Year", RtcPeriph::port->YEAR, 
+                        "Year", t.year,
                         2020, 2099, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
                     break;
                 case steps::month:
                     popup.configure(
-                        "Month", RtcPeriph::port->MONTH, 
+                        "Month", t.month, 
                         1, 12, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
@@ -112,10 +139,10 @@ namespace menu {
                 case steps::day:
                     {
                         // check for a leap year
-                        const bool is_leap_year_month = (date.year & 0b11) == 0 && (date.month == 1);
+                        const bool is_leap_year_month = (date.year & 0b11) == 0 && (date.month == 2);
 
                         popup.configure(
-                            "Day", RtcPeriph::port->DOM, 
+                            "Day", t.day, 
                             0, klib::io::rtc::month_days[date.month] + is_leap_year_month, 
                             [&](int32_t value){next(value);},
                             [&](){cancel();}
@@ -124,21 +151,21 @@ namespace menu {
                     break;
                 case steps::hour:
                     popup.configure(
-                        "Hour", RtcPeriph::port->HRS, 
+                        "Hour", t.hours, 
                         0, 23, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
                     break;
                 case steps::minute:
                     popup.configure(
-                        "Minute", RtcPeriph::port->MIN, 
+                        "Minute", t.minutes, 
                         0, 59, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
                     break;
                 case steps::second:
                     popup.configure(
-                        "Second", RtcPeriph::port->SEC, 
+                        "Second", t.seconds, 
                         0, 59, [&](int32_t value){next(value);},
                         [&](){cancel();}
                     );
@@ -150,12 +177,12 @@ namespace menu {
 
     public:
         time(numeric_popup<FrameBuffer>& popup): 
-            current(steps::year), date{}, popup(popup)
+            current(steps::timezone), date{}, popup(popup)
         {}
 
         virtual void main(const klib::time::us delta, const input::buttons& buttons) override {
             // check for the first entry
-            if (current == steps::year) {
+            if (current == steps::timezone) {
                 // show the first screen
                 change_screen(current);
             }
