@@ -6,6 +6,7 @@
 #include "ui/splash.hpp"
 #include "ui/settings.hpp"
 #include "ui/numeric_popup.hpp"
+#include "ui/popup.hpp"
 #include "ui/time.hpp"
 #include "ui/calibration.hpp"
 #include "ui/config.hpp"
@@ -151,6 +152,7 @@ int main() {
 
     // create the popup first as some other screens use it
     menu::numeric_popup<fb_t> numeric_popup = {};
+    menu::popup<fb_t> string_popup = {};
 
     // setup the first state. We initialize everything 
     // except the screen in the splash screen. This speeds
@@ -160,7 +162,7 @@ int main() {
     menu::totp<fb_t, storage, rtc, usb_keyboard> totp = {};
     menu::settings<fb_t> settings = {};
     menu::time<fb_t, rtc_periph, rtc> time(numeric_popup);
-    menu::calibration<fb_t, rtc_periph> calibration(numeric_popup);
+    menu::calibration<fb_t, rtc_periph> calibration(numeric_popup, string_popup);
     menu::config<
         fb_t, storage, fat_helper, 
         usb_keyboard, usb_massstorage
@@ -177,6 +179,7 @@ int main() {
         &config,
         &mouse,
         &numeric_popup,
+        &string_popup,
     };
 
     // get the current screen
