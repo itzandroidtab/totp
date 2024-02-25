@@ -32,8 +32,8 @@ namespace menu {
         // all the text fields in the settings menu
         constexpr static char labels[label_count][16] = {
             "usb mode",
-            "set time",
-            "set cal",
+            "time",
+            "rtc cal",
             "usb jiggler",
             "version",
         };

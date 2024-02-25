@@ -105,6 +105,9 @@ namespace menu {
 
             // go back one screen
             current = static_cast<steps>(static_cast<uint32_t>(current) - 1);
+
+            // change to the previous screen
+            change_screen(current);
         }
 
         void change_screen(const steps current) {
@@ -181,18 +184,14 @@ namespace menu {
         {}
 
         virtual void main(const klib::time::us delta, const input::buttons& buttons) override {
-            // check for the first entry
-            if (current == steps::timezone) {
-                // show the first screen
-                change_screen(current);
-            }
-            else {
-                // reset and go back to the previous screen
-                current = steps::year;
+            // change to the first step when we are called. We 
+            // are only called from the settings menu. The
+            // popup callbacks will skip this by changing 
+            // directly to the new popup
+            current = steps::timezone;
 
-                // go back
-                screen_base::buffer.back();
-            }
+            // show the first screen
+            change_screen(current);
         }
 
         virtual void draw(FrameBuffer& frame_buffer, const klib::vector2u& offset) override {

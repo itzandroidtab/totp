@@ -10,5 +10,6 @@ namespace menu {
         config,
         mouse,
         numeric_popup,
+        string_popup,
     };
 }
