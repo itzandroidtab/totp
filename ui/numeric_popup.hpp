@@ -142,7 +142,7 @@ namespace menu {
                 klib::vector2i{
                     (240 / 2) - 
                     static_cast<int32_t>(
-                        (klib::string::strlen(str) * screen_base::large_font::width) / 2
+                        (klib::string::strlen(str) * screen_base::large_text::font::width) / 2
                     ), 2
                 } - offset.cast<int32_t>(), 
                 klib::graphics::white
@@ -155,8 +155,8 @@ namespace menu {
                 klib::vector2i{
                     (240 / 2) - 
                     static_cast<int32_t>(
-                        (klib::string::strlen(buffer) * screen_base::large_font::width) / 2
-                    ), (134 / 2) - (screen_base::large_font::height / 2)
+                        (klib::string::strlen(buffer) * screen_base::large_text::font::width) / 2
+                    ), (134 / 2) - (screen_base::large_text::font::height / 2)
                 } - offset.cast<int32_t>(), 
                 klib::graphics::white
             );

@@ -203,7 +203,7 @@ namespace menu {
             // draw the entry text with a small font above the token if we have any
             if (klib::string::strlen(entries[current].str)) {
                 // draw the current token using the large font
-                screen<FrameBuffer>::small_text::template draw<FrameBuffer>(
+                screen_base::small_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     "profile", 
                     klib::vector2i{3, 3} - offset.cast<int32_t>(), 
@@ -211,16 +211,16 @@ namespace menu {
                 );
 
                 // draw the current token using the large font
-                screen<FrameBuffer>::large_text::template draw<FrameBuffer>(
+                screen_base::large_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     entries[current].str, 
-                    klib::vector2i{6, 9 + screen<FrameBuffer>::small_font::height} - offset.cast<int32_t>(), 
+                    klib::vector2i{6, 9 + screen_base::small_text::font::height} - offset.cast<int32_t>(), 
                     klib::graphics::white
                 );
             }
 
             // draw the current token using the large font
-            screen<FrameBuffer>::large_text::template draw<FrameBuffer>(
+            screen_base::large_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 current_token_buf, 
                 klib::vector2i{60, 60} - offset.cast<int32_t>(), 
@@ -228,7 +228,7 @@ namespace menu {
             );
 
             // draw the next token using the small font
-            screen<FrameBuffer>::small_text::template draw<FrameBuffer>(
+            screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 next_token_buf, 
                 klib::vector2i{108, 78} - offset.cast<int32_t>(), 
@@ -236,23 +236,23 @@ namespace menu {
             );
 
             // draw the epoch time using the small font
-            screen<FrameBuffer>::small_text::template draw<FrameBuffer>(
+            screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 epoch_buf, 
                 klib::vector2i{
                     (240 - 1) - static_cast<int32_t>(
-                            klib::string::strlen(epoch_buf) * screen<FrameBuffer>::small_font::width
+                            klib::string::strlen(epoch_buf) * screen_base::small_text::font::width
                         ), 
-                    (135 - 1 - screen<FrameBuffer>::small_font::height)
+                    (135 - 1 - screen_base::small_text::font::height)
                 } - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
 
             // draw using the large font
-            screen<FrameBuffer>::small_text::template draw<FrameBuffer>(
+            screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer,
                 delta_buf, 
-                klib::vector2i{1, (135 - 1 - screen<FrameBuffer>::small_font::height)} - offset.cast<int32_t>(), 
+                klib::vector2i{1, (135 - 1 - screen_base::small_text::font::height)} - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
 
@@ -271,11 +271,11 @@ namespace menu {
             }
 
             // draw the time left in seconds in the circle
-            screen<FrameBuffer>::small_text::template draw<FrameBuffer>(
+            screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer, seconds_left_buf, 
                 klib::vector2i{
-                    (204 + 1) - static_cast<int32_t>((klib::string::strlen(seconds_left_buf) * screen<FrameBuffer>::small_font::width) / 2), 
-                    (68 + 1) - (screen<FrameBuffer>::small_font::height / 2)
+                    (204 + 1) - static_cast<int32_t>((klib::string::strlen(seconds_left_buf) * screen_base::small_text::font::width) / 2), 
+                    (68 + 1) - (screen_base::small_text::font::height / 2)
                 } - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
