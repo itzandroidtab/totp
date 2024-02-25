@@ -61,6 +61,10 @@ namespace menu {
         }
 
         virtual void main(const klib::time::us delta, const input::buttons& buttons) override {
+            // flag if we are doing a long press on up or down
+            static bool long_press_up = false;
+            static bool long_press_down = false;
+
             // check what button is pressed
             if (buttons.enter == input::state::pressed) {
                 // before we do anything go back to the previous item
@@ -84,7 +88,16 @@ namespace menu {
                     cancel();
                 }
             }
-            else if (input::is_pressed(buttons.down)) {
+            else if ((buttons.down == input::state::released) || (buttons.up == input::state::released)) {
+                // stop incrementing/decrementing the numbers
+                long_press_up = false;
+                long_press_down = false;
+            }
+            else if (input::is_pressed(buttons.down) || long_press_down) {
+                if (buttons.down == input::state::long_pressed) {
+                    long_press_down = true;
+                }
+
                 // the down button is pressed
                 if (value <= range.x) {
                     // set to max value in range
@@ -94,7 +107,11 @@ namespace menu {
                     value--;
                 }
             }
-            else if (input::is_pressed(buttons.up)) {
+            else if (input::is_pressed(buttons.up) || long_press_up) {
+                if (buttons.up == input::state::long_pressed) {
+                    long_press_up = true;
+                }
+
                 // the up button is pressed
                 if (value >= range.y) {
                     // set to max value in range
