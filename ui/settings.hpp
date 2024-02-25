@@ -2,6 +2,8 @@
 
 #include <klib/graphics/bitmap.hpp>
 
+#include <version.hpp>
+
 #include "menu.hpp"
 #include "screen.hpp"
 
@@ -16,6 +18,7 @@ namespace menu {
             time,
             calibration,
             mouse,
+            version,
 
             // should always be at the end
             count
@@ -32,6 +35,7 @@ namespace menu {
             "set time",
             "set cal",
             "usb jiggler",
+            "version",
         };
 
         // menu that can draw all the labels
@@ -90,14 +94,17 @@ namespace menu {
             // clear the background black
             frame_buffer.clear(klib::graphics::black);
 
-            // array with all the options
-            char buffer[label_count][sizeof(labels[0])] = {};
+            // create a array with nullptrs
+            const char* ptr[label_count] = {};
+
+            // set the version to the version string
+            ptr[static_cast<uint8_t>(item::version)] = version;
 
             // update the labels
             options.template draw<typename screen_base::large_text>(
                 frame_buffer, 
                 offset, static_cast<uint8_t>(selection), 
-                buffer, klib::graphics::grey, 
+                ptr, klib::graphics::grey, 
                 klib::graphics::white, {}
             );
         }

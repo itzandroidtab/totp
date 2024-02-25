@@ -75,9 +75,9 @@ namespace menu {
             data(args)
         {}
 
-        template <typename Font, typename FrameBuffer, uint32_t BufferSize>
-        void draw(FrameBuffer& fb, const klib::vector2u& offset, const uint32_t selected, char option[Count][BufferSize],
-            const klib::graphics::color foreground, const klib::graphics::color background, const bool hidden[Count] = {})
+        template <typename Font, typename FrameBuffer>
+        void draw(FrameBuffer& fb, const klib::vector2u& offset, const uint32_t selected, const char** option,
+            const klib::graphics::color foreground, const klib::graphics::color background, const bool* hidden)
         {
             uint32_t onscreen_index = 0;
             uint32_t hidden_by_scroll = 0;
@@ -127,29 +127,32 @@ namespace menu {
                 // move the onscreen index
                 onscreen_index++;
 
-                // // check if we need to show a option for the current item
-                // if (option == nullptr || option[i] == nullptr) {
-                //     // skip if we dont have one
-                //     continue;
-                // }
+                // check if we need to show a option for the current item
+                if (option == nullptr || option[i] == nullptr) {
+                    // skip if we dont have one
+                    continue;
+                }
 
-                // // get the length of the option string
-                // const uint32_t len = klib::string::strlen(option[i]);
+                // get the length of the option string
+                const uint32_t len = klib::string::strnlen(option[i], sizeof(string));
 
-                // // check if the string has any length
-                // if (!len) {
-                //     continue;
-                // }
+                // check if the string has any length
+                if (!len || (len == sizeof(string))) {
+                    continue;
+                }
 
-                // // write the value to the display
-                // writer.draw(
-                //     fb, option[i], 
-                //     klib::vector2i{
-                //         static_cast<int32_t>(Width - line_boarder_pixels + (len * 8)), 
-                //         static_cast<int32_t>(3 + position_index * line_boarder_pixels)
-                //     } - offset.cast<int32_t>(),
-                //     col_foreground, klib::graphics::transparent
-                // );
+                // write the value to the display
+                Font::template draw(
+                    fb, option[i], 
+                    klib::vector2i{
+                        static_cast<int32_t>(Width - (line_boarder_pixels + (Font::font::width * len))),
+                        static_cast<int32_t>(
+                            boarder_pixels + (boarder_pixels / 2) + 
+                            (position_index * line_pixels)
+                        )
+                    } - offset.cast<int32_t>(),
+                    col_foreground, klib::graphics::transparent
+                );
             }
 
             // check if we need to clear parts of the screen
