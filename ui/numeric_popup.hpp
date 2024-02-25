@@ -19,6 +19,9 @@ namespace menu {
         // pointer to the string we should show
         const char *str;
 
+        // max length of the full range
+        uint32_t max_length;
+
         // range of the numeric popup
         klib::vector2i range;
         int32_t value;
@@ -26,7 +29,7 @@ namespace menu {
     public:
         numeric_popup(): 
             next(nullptr), cancel(nullptr), str(nullptr), 
-            range{}, value(0)
+            max_length(0), range{}, value(0)
         {}
 
         /**
@@ -46,6 +49,11 @@ namespace menu {
             // update the range
             this->value = value;
             this->range = {min, max};
+
+            this->max_length = klib::max(
+                klib::string::detail::count_chars(min),
+                klib::string::detail::count_chars(max)
+            );
 
             // update the callbacks
             this->next = next;
@@ -108,29 +116,37 @@ namespace menu {
             // convert the number to a value
             klib::string::itoa(value, buffer);
 
+            // set the height to 40 pixels
+            const int32_t h = 40;
+
+            // calculate the width. At least the same as the height
+            const int32_t w = klib::max(h, 
+                ((max_length * screen_base::large_text::font::width) + 20) / 2
+            );
+
             // draw the rectangle arround the number
             screen_base::draw_rectangle(frame_buffer, klib::graphics::blue, 
-                klib::vector2i{240 / 3, (134 / 2) - 40} - offset.cast<int32_t>(), 
-                klib::vector2i{(240 / 3) * 2, (134 / 2) + 40} - offset.cast<int32_t>()
+                klib::vector2i{(240 / 2) - w, (134 / 2) - h} - offset.cast<int32_t>(), 
+                klib::vector2i{(240 / 2) + w, (134 / 2) + h} - offset.cast<int32_t>()
             );
 
             // add 2 lines on both sides of the rectangle to round it a bit
             screen_base::draw_rectangle(frame_buffer, klib::graphics::blue, 
-                klib::vector2i{240 / 3 - 1, (134 / 2) - 39} - offset.cast<int32_t>(), 
-                klib::vector2i{(240 / 3), (134 / 2) + 39} - offset.cast<int32_t>()
+                klib::vector2i{(240 / 2) - (w - 1), (134 / 2) - (h - 1)} - offset.cast<int32_t>(), 
+                klib::vector2i{(240 / 2) + w, (134 / 2) + (h - 1)} - offset.cast<int32_t>()
             );
             screen_base::draw_rectangle(frame_buffer, klib::graphics::blue, 
-                klib::vector2i{240 / 3 - 2, (134 / 2) - 38} - offset.cast<int32_t>(), 
-                klib::vector2i{(240 / 3) - 1, (134 / 2) + 38} - offset.cast<int32_t>()
+                klib::vector2i{(240 / 2) - (w - 2), (134 / 2) - (h - 2)} - offset.cast<int32_t>(), 
+                klib::vector2i{(240 / 2) + (w - 1), (134 / 2) + (h - 2)} - offset.cast<int32_t>()
             );
 
             screen_base::draw_rectangle(frame_buffer, klib::graphics::blue, 
-                klib::vector2i{((240 / 3) * 2), (134 / 2) - 39} - offset.cast<int32_t>(), 
-                klib::vector2i{((240 / 3) * 2) + 1, (134 / 2) + 39} - offset.cast<int32_t>()
+                klib::vector2i{(240 / 2) - w, (134 / 2) - (h - 1)} - offset.cast<int32_t>(), 
+                klib::vector2i{(240 / 2) + (w + 1), (134 / 2) + (h - 1)} - offset.cast<int32_t>()
             );
             screen_base::draw_rectangle(frame_buffer, klib::graphics::blue, 
-                klib::vector2i{((240 / 3) * 2) + 1, (134 / 2) - 38} - offset.cast<int32_t>(), 
-                klib::vector2i{((240 / 3) * 2) + 2, (134 / 2) + 38} - offset.cast<int32_t>()
+                klib::vector2i{(240 / 2) - (w + 1), (134 / 2) - (h - 2)} - offset.cast<int32_t>(), 
+                klib::vector2i{(240 / 2) + (w + 2), (134 / 2) + (h - 2)} - offset.cast<int32_t>()
             );
 
             // draw the bigmaps of the arrows
