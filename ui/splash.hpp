@@ -112,11 +112,17 @@ namespace menu {
                 klib::vector2i{95, 34} - offset.cast<int32_t>()
             );
 
+            // url to show
+            constexpr static char url[] = "koon.io";
+
             // draw using the small font
             screen_base::small_text::template draw<FrameBuffer>(
-                frame_buffer, 
-                "koon.io", 
-                klib::vector2i{240 - (7 * screen_base::small_font::width), 120} - offset.cast<int32_t>(), 
+                frame_buffer, url, 
+                klib::vector2i{
+                    240 - (
+                        klib::string::strlen(url) * screen_base::small_text::font::width
+                    ), 120
+                } - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
         }

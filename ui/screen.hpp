@@ -76,16 +76,19 @@ namespace menu {
      */
     template <typename FrameBuffer>
     class screen {
+    private:
+        // fonts used in the string functions
+        using small_font = klib::graphics::ascii_font_8x8;
+        using large_font = klib::graphics::ascii_font_16x16;
+
     protected:
         // Screen queue. Allows up for 8 screens deep
         static inline screen_buffer<8> buffer = {};
 
         // small text for in the screens
-        using small_font = klib::graphics::ascii_font_8x8;
         using small_text = klib::graphics::string<small_font>;
 
         // large text for in the screens
-        using large_font = klib::graphics::ascii_font_16x16;
         using large_text = klib::graphics::string<large_font>;
 
         /**
