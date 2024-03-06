@@ -7,7 +7,14 @@
 #include <klib/string.hpp>
 
 extern "C" {
+    // Start of the profile section. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
     extern uint32_t __profiles_start; 
+
+    // End of the profile section. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
     extern uint32_t __profiles_end; 
 }
 
