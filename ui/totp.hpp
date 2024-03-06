@@ -36,8 +36,8 @@ namespace menu {
 
         char delta_buf[32] = {};
         char epoch_buf[12] = {};
-        char current_token_buf[7] = {};
-        char next_token_buf[7] = {};
+        char current_token_buf[16] = {};
+        char next_token_buf[16] = {};
         char seconds_left_buf[7] = {};
 
         constexpr static uint32_t step_size = 2;
@@ -85,6 +85,32 @@ namespace menu {
 
         // current entry
         uint32_t current = 0;
+
+        /**
+         * @brief Get get the token based on the entry and the current time
+         * 
+         * @param entry 
+         * @param current 
+         * @return uint32_t 
+         */
+        uint32_t get_token(const storage::entry entry, const klib::time::s current) {
+            // check the amount of digits we should return
+            switch (entry.digits) {
+                case storage::digit::digits_6:
+                    return klib::crypt::totp<hash, 6>::hash(
+                        reinterpret_cast<const uint8_t*>(entry.key.data()), 
+                        entry.key.size(), current.value, 30, 0
+                    );
+                case storage::digit::digits_8:
+                    return klib::crypt::totp<hash, 8>::hash(
+                        reinterpret_cast<const uint8_t*>(entry.key.data()), 
+                        entry.key.size(), current.value, 30, 0
+                    );  
+            }
+
+            // for all the other formats return 0
+            return 0;
+        }
 
     public:
         totp():
@@ -168,21 +194,26 @@ namespace menu {
 
             if (totp_changed) {
                 // update the tokens
-                const auto current_token = klib::crypt::totp<hash, 6>::hash(
-                    reinterpret_cast<const uint8_t*>(entries[current].key.data()), 
-                    entries[current].key.size(), last_epoch.value, 30, 0
-                );
+                const uint32_t current_token = get_token(entries[current], last_epoch);
 
+                // copy the token to the buffer and set the width
+                // based on the amount of digits
                 klib::string::itoa(current_token, current_token_buf);
-                klib::string::set_width(current_token_buf, 6, '0');
-
-                const auto next_token = klib::crypt::totp<hash, 6>::hash(
-                    reinterpret_cast<const uint8_t*>(entries[current].key.data()), 
-                    entries[current].key.size(), last_epoch.value + 30, 30, 0
+                klib::string::set_width(current_token_buf, 
+                    static_cast<uint8_t>(entries[current].digits), '0'
                 );
 
+                // get the next token
+                const uint32_t next_token = get_token(
+                    entries[current], last_epoch + klib::time::s(30)
+                );
+
+                // copy the token to the buffer and set the width
+                // based on the amount of digits
                 klib::string::itoa(next_token, next_token_buf);
-                klib::string::set_width(next_token_buf, 6, '0');
+                klib::string::set_width(next_token_buf, 
+                    static_cast<uint8_t>(entries[current].digits), '0'
+                );
             }
 
             // get the delta as a string
@@ -202,7 +233,7 @@ namespace menu {
 
             // draw the entry text with a small font above the token if we have any
             if (klib::string::strlen(entries[current].str)) {
-                // draw the current token using the large font
+                // draw the title at the top of the screen
                 screen_base::small_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     "profile", 
@@ -210,7 +241,7 @@ namespace menu {
                     klib::graphics::white
                 );
 
-                // draw the current token using the large font
+                // draw the profile name below the title
                 screen_base::large_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     entries[current].str, 
@@ -223,7 +254,11 @@ namespace menu {
             screen_base::large_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 current_token_buf, 
-                klib::vector2i{60, 60} - offset.cast<int32_t>(), 
+                klib::vector2i{
+                    static_cast<int32_t>(
+                        156 - (klib::string::strlen(current_token_buf) * screen_base::large_text::font::width)
+                    ), 60
+                } - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
 
@@ -231,7 +266,11 @@ namespace menu {
             screen_base::small_text::template draw<FrameBuffer>(
                 frame_buffer, 
                 next_token_buf, 
-                klib::vector2i{108, 78} - offset.cast<int32_t>(), 
+                klib::vector2i{
+                    static_cast<int32_t>(
+                        156 - (klib::string::strlen(next_token_buf) * screen_base::small_text::font::width)
+                    ), 78
+                } - offset.cast<int32_t>(),
                 klib::graphics::white
             );
 
