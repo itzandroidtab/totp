@@ -112,6 +112,17 @@ SECTIONS
         PROVIDE(__fini_array_end = .);
     } > rom
 
+    .profile (NOLOAD) :
+    {
+        /* provide the start and the end of the profile section */
+        PROVIDE(__profiles_start = .);
+
+        /* mark the whole section as filled with data */
+        . = . + LENGTH(profiles);
+
+        PROVIDE(__profiles_end = .);
+    } > profiles
+
     /* Stack segment */
     .stack (NOLOAD) :
     {

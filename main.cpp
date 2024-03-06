@@ -148,7 +148,7 @@ int main() {
     constexpr static uint32_t key_end = 0x40000;
 
     // using for the storage
-    using storage = storage::storage<flash, key_start, key_end>;
+    using storage = storage::storage<flash>;
 
     // create the popup first as some other screens use it
     menu::numeric_popup<fb_t> numeric_popup = {};
