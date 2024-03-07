@@ -146,7 +146,7 @@ namespace menu {
 
                         popup.configure(
                             "Day", t.day, 
-                            0, klib::io::rtc::month_days[date.month] + is_leap_year_month, 
+                            1, klib::io::rtc::month_days[date.month] + is_leap_year_month, 
                             [&](int32_t value){next(value);},
                             [&](){cancel();}
                         );
