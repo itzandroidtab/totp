@@ -2,6 +2,8 @@
 
 #include <klib/graphics/bitmap.hpp>
 
+#include <storage.hpp>
+
 #include "screen.hpp"
 
 namespace menu {
@@ -90,7 +92,10 @@ namespace menu {
             Rtc::init();
 
             // init the storage for all the keys
-            Storage::init({});
+            Storage::init({}, 
+                reinterpret_cast<uint32_t>(&__profiles_start), 
+                reinterpret_cast<uint32_t>(&__profiles_end)
+            );
 
             // init the usb driver + device
             Usb::init();

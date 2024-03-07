@@ -6,6 +6,18 @@
 #include <klib/dynamic_array.hpp>
 #include <klib/string.hpp>
 
+extern "C" {
+    // Start of the profile section. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
+    extern uint32_t __profiles_start; 
+
+    // End of the profile section. Definition is done in the 
+    // linkerscript. Only the address of the variable should be used. The
+    // address points to the correct location of the variable
+    extern uint32_t __profiles_end; 
+}
+
 namespace storage {
     enum class digit: uint8_t {
         digits_6 = 6,
@@ -53,7 +65,7 @@ namespace storage {
      * @brief Storage class that reads the entries
      * 
      */
-    template <typename Flash, uint32_t Start, uint32_t End>
+    template <typename Flash>
     class storage {
     public:
         // the max amount of entries we support for now
@@ -63,6 +75,9 @@ namespace storage {
         // array to store all the entries
         static inline klib::dynamic_array<entry, max_entries> entries = {};
 
+        // start address used in writing
+        static inline uint32_t start_address = 0xffffffff;
+
     public:
         /**
          * @brief Read the memory and add them to the entries array
@@ -71,11 +86,13 @@ namespace storage {
          * @param end 
          * @param key 
          */
-        static void init(const std::span<uint8_t> key) {
-            uint32_t address = Start;
+        static void init(const std::span<uint8_t> key, const uint32_t start, const uint32_t end) {
+            // update the start address and set the address we should
+            // start reading from
+            uint32_t address = start_address = start;
 
             // get all the entries
-            for (uint32_t i = 0; (i < max_entries) && ((address + sizeof(entry)) < End); i++) {
+            for (uint32_t i = 0; (i < max_entries) && ((address + sizeof(entry)) < end); i++) {
                 // TODO: decrypt the keys here
                 const auto& e = *reinterpret_cast<const entry*>(address);
 
@@ -110,8 +127,14 @@ namespace storage {
          * 
          */
         static void write() {
+            // make sure we are initialized
+            if (start_address == 0xffffffff) {
+                // do not write if the start address is wrong
+                return;
+            }
+
             // erase the sector
-            Flash::erase(Flash::erase_mode::sector, Start);
+            Flash::erase(Flash::erase_mode::sector, start_address);
 
             // write in 1024 byte chunks
             for (uint32_t i = 0; i < ((max_entries * sizeof(entry)) / 1024); i++) {
@@ -120,7 +143,7 @@ namespace storage {
                 };
 
                 // write the new data
-                Flash::write(Start + (i * 1024), p);
+                Flash::write(start_address + (i * 1024), p);
             }
         }
     };
