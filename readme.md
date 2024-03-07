@@ -9,14 +9,14 @@ The main screen takes the longest to draw. This is caused by the amount of pixel
 
 ### Features
 * keys never leave the token after setup
-* enter button types 6 digit key using HID keyboard (any device that supports HID keyboards should work)
+* support for 6 and 8 digit tokens
+* enter button types 6/8 digit token using HID keyboard (any device that supports HID keyboards should work)
 * supports up to 32 profiles
 * rechargable RTC battery
-* USB mode to add/delete profiles using a CSV file
+* USB mode to add/delete profiles using a CSV file (supports base32, hex and hex string)
 * support to change the RTC calibration values in the settings
-* support for setting the time
+* support for setting the time + timezone (currently only GMT)
 * 60 seconds screen timeout
-* Support for timezones
 
 ### Images
 Photos<br>
@@ -33,9 +33,7 @@ More pictures can be found [here](./img/)
 
 ### TODO
 * encrypt profiles
-* support for base32 keys
 * support for different intervals
-* support for 8 digit keys
 * add support for more than 32 profiles (needs a rework if more profiles are required. The profiles are copied to ram and there is not enough for more at the moment. If we leave them in flash we can store a lot more)
 * rework the calibration and time settings screens
 
