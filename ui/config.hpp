@@ -6,6 +6,7 @@
 #include <klib/filesystem/virtual_fat.hpp>
 #include <klib/delay.hpp>
 #include <klib/string.hpp>
+#include <klib/crypt/base32.hpp>
 
 #include "screen.hpp"
 
@@ -193,7 +194,8 @@ namespace menu {
             "To create a new profile, add a new line below the CSV header in the following format:\r\n\r\n"
             "profile name, interval, digits, key in hex or in string format.\r\n\r\nExample:\r\n"
             "test, 30, 6, \"SOMEKEY123\"\r\ntest, 30, 6, 0xab 0xcd 0xef 0x12 0x34 0x56 0x78 0x90\r\n"
-            "test, 30, 6, abcdef1234567890\r\n\r\nprofile, interval, digits, key\r\n";
+            "test, 30, 6, abcdef1234567890\r\ntest, 30, 8, b32\"MFRGGZDFMYYTEMZUGU3DOOBZGA======\""
+            "\r\n\r\nprofile, interval, digits, key\r\n";
 
         constexpr static char config_csv[] = "profile, interval, digits, key\r\n";
 
@@ -360,8 +362,8 @@ namespace menu {
             }
 
             // parse the key. The key is till the end of the line. We can either have 
-            // a hex array or a string. Hex string needs to have "" around it. Search
-            // for the ""
+            // a hex array, string or a base32 string. Hex string needs to have "" around
+            // it. Search for the ""
             const auto quotes = std::count(data, data + length, '"');
 
             // check if we have a valid entry
@@ -370,18 +372,52 @@ namespace menu {
             }
 
             if (quotes) {
-                // we are in string mode
+                // check if have a base32 string or a hex string
                 const auto start = std::find(data, data + length, '"');
                 const auto end = std::find(start + 1, data + length, '"');
 
-                // copy the data directly into our buffer if it fits
-                if ((end - (start + 1)) >= entry.key.max_size()) {
-                    return parse_result::invalid;
-                }
+                // check for base 32
+                if ((std::strncmp((start - 3), "b32", 3) == 0) || 
+                    (std::strncmp((start - 3), "B32", 3) == 0)) 
+                {
+                    // support up to 320 bits on the input and output 
+                    // input = 320 / 5 = 64 bytes
+                    // output = 320 / 8 = 40 bytes
+                    char input[65] = {};
+                    uint8_t buf[40];
 
-                // add all the characters
-                for (uint32_t i = 0; i < (end - (start + 1)); i++) {
-                    entry.key.push_back(start[1 + i]);
+                    // check if we can copy it to the local buffer
+                    if ((end - (start + 1)) >= (sizeof(input) - 1)) {
+                        return parse_result::invalid;
+                    }
+
+                    // copy to the local buffer
+                    std::copy_n((start + 1), end - (start + 1), input);
+
+                    // decode the base32 value
+                    const uint32_t size = klib::crypt::base32::decode(input, buf);
+
+                    // check if the conversion was successfull
+                    if (!size) {
+                        return parse_result::invalid;
+                    }
+
+                    // copy the bytes to the key
+                    for (uint32_t i = 0; i < size; i++) {
+                        entry.key.push_back(buf[i]);
+                    }
+                }
+                else {
+                    // we are in string mode. copy the data directly 
+                    // into our buffer if it fits
+                    if ((end - (start + 1)) >= entry.key.max_size()) {
+                        return parse_result::invalid;
+                    }
+
+                    // add all the characters
+                    for (uint32_t i = 0; i < (end - (start + 1)); i++) {
+                        entry.key.push_back(start[1 + i]);
+                    }
                 }
 
                 return parse_result::valid;
