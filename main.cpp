@@ -142,13 +142,8 @@ int main() {
     // using for writing to flash
     using flash = target::io::flash;
 
-    // the range where we store the keys is 0x38000 - 0x40000
-    // TODO: use the region from the linkerscript
-    constexpr static uint32_t key_start = 0x38000;
-    constexpr static uint32_t key_end = 0x40000;
-
     // using for the storage
-    using storage = storage::storage<flash, key_start, key_end>;
+    using storage = storage::storage<flash>;
 
     // create the popup first as some other screens use it
     menu::numeric_popup<fb_t> numeric_popup = {};

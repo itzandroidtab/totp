@@ -18,6 +18,10 @@ Memories definitions
 MEMORY
 {
     rom (rx) : org = 0x00000000 + 8k, len = 256k - 8k - 32k
+    /* Note: The profiles need to be sector alligned. The 
+       storage erases the whole sector and writes the entries
+       back if we changed something. All other data in this
+       sector will be lost on changing the entries */
     profiles (r) : org = 0x00000000 + 256k - 32k, len = 32k
     ram (rwx) : org = 0x10000000, len = 16k
     ram1 (rwx) : org = 0x2007C000, len = 16k
@@ -111,6 +115,17 @@ SECTIONS
         
         PROVIDE(__fini_array_end = .);
     } > rom
+
+    .profile (NOLOAD) :
+    {
+        /* provide the start and the end of the profile section */
+        PROVIDE(__profiles_start = .);
+
+        /* mark the whole section as filled with data */
+        . = . + LENGTH(profiles);
+
+        PROVIDE(__profiles_end = .);
+    } > profiles
 
     /* Stack segment */
     .stack (NOLOAD) :
