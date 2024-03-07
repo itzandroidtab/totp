@@ -1,4 +1,4 @@
 #pragma once
 
 // Current version
-constexpr static char version[] = "0.2";
+constexpr static char version[] = "0.3";
