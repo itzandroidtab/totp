@@ -1,12 +1,6 @@
 ## Hardware TOTP token
 Open source hardware TOTP token. Currently targets the LPC1756, LPC1758 and LPC1759 (with a small change it should also run on the LPC1754). 
 
-The LPC1756 does not have enough ram to hold a full framebuffer (240 * 135 * 2 = 64'800 bytes). To work around this issue, we use 2 smaller framebuffers we alternate between. While one framebuffer is being transferred to the screen using DMA we fill the other.
-
-To make it easier (for me) the whole screen is written to this smaller framebuffer. The pixels that do not fit the framebuffer are thrown away. This does waste CPU cycles but is not limiting the framerate. Filling a full frame with pixels takes around 6 milliseconds. Writing a full frame of framebuffers takes around 11 milliseconds. This limits the maximum framerate to ≈ 85FPS. To get a consistant frame rate there is a limit of 60FPS.
-
-The main screen takes the longest to draw. This is caused by the amount of pixels of the circle it needs to draw. The circle is generated on compile time to work around that the LPC175x family does not have a FPU. These generated pixels use 8640 bytes of flash.
-
 ### Features
 * keys never leave the token after setup
 * support for 6 and 8 digit tokens
@@ -19,17 +13,7 @@ The main screen takes the longest to draw. This is caused by the amount of pixel
 * 60 seconds screen timeout
 
 ### Images
-Photos<br>
-<img src='img/totp_test.jpg' width='500'>
-<img src='img/full_front0.jpg' width='500'>
-<img src='img/case.jpg' width='500'>
-
-PCB<br>
-<img src='img/pcb.jpg' width='500'>
-<img src='img/lpc1756_totp.png' width='500'>
-<img src='img/lpc1756_totp_back.png' width='500'>
-
-More pictures can be found [here](./img/)
+Images can be found in the project logs at [hackaday](https://hackaday.io/project/194867-hardware-2fa-totp-authenticator)
 
 ### TODO
 * encrypt profiles
@@ -42,3 +26,9 @@ TOTP uses [klib](https://github.com/itzandroidtab/klib). This repo can be cloned
 
 ### Extra
 Is intended to be used with [USB dfu bootloader](https://github.com/itzandroidtab/dfu_bootloader). To build without bootloader support delete `set(TARGET_LINKERSCRIPT ...)` from the `CMakeLists.txt` in this project.
+
+The LPC1756 does not have enough ram to hold a full framebuffer (240 * 135 * 2 = 64'800 bytes). To work around this issue, we use 2 smaller framebuffers we alternate between. While one framebuffer is being transferred to the screen using DMA we fill the other.
+
+To make it easier (for me) the whole screen is written to this smaller framebuffer. The pixels that do not fit the framebuffer are thrown away. This does waste CPU cycles but is not limiting the framerate. Filling a full frame with pixels takes around 6 milliseconds. Writing a full frame of framebuffers takes around 11 milliseconds. This limits the maximum framerate to ≈ 85FPS. To get a consistant frame rate there is a limit of 60FPS.
+
+The main screen takes the longest to draw. This is caused by the amount of pixels of the circle it needs to draw. The circle is generated on compile time to work around that the LPC175x family does not have a FPU. These generated pixels use 8640 bytes of flash.
