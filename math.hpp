@@ -4,7 +4,7 @@
 
 namespace math {
     // pi
-    constexpr static float M_PI = 3.14159265358979323846;
+    constexpr static double M_PI = 3.14159265358979323846;
 
     /**
      * @brief Constexpr function to convert radians to degrees
@@ -12,7 +12,7 @@ namespace math {
      * @param degrees 
      * @return constexpr float 
      */
-    constexpr uint32_t rad_to_degrees(float rad){
+    constexpr uint32_t rad_to_degrees(double rad){
         return rad * 180.0 / M_PI;
     }
 
@@ -22,7 +22,7 @@ namespace math {
      * @param degrees 
      * @return constexpr float 
      */
-    constexpr float degrees_to_rad(unsigned int degrees){
+    constexpr double degrees_to_rad(unsigned int degrees){
         return degrees * M_PI / 180.0;
     }
 
