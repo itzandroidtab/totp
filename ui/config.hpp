@@ -34,20 +34,10 @@ namespace menu::detail {
         // fat filesystem
         using filesystem = klib::filesystem::virtual_fat<fat_helper, 16, (static_cast<uint32_t>(1) * 1024 * 1024), 16, 1>;
 
-    protected:
-        // current file that is being processed
-        static inline const klib::filesystem::detail::directory* file = 0;
-
-        // offset to the first sector of the file
-        static inline uint32_t start_offset = 0;
-
-        // amount of bytes received
-        static inline uint32_t transferred_bytes = 0;
-
-    public:
         /**
          * @brief Functions required for the filesystem. These functions will 
-         * be called when something changes in the filesystem
+         * be called when something changes in the filesystem (other than the
+         * already existing files)
          * 
          */
 
