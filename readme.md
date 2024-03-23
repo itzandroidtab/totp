@@ -11,13 +11,13 @@ Open source hardware TOTP token. Currently targets the LPC1756, LPC1758 and LPC1
 * support to change the RTC calibration values in the settings
 * support for setting the time + timezone (currently only GMT)
 * 60 seconds screen timeout
+* support for different intervals (supports 1 - 180 seconds)
 
 ### Images
 Images can be found in the project logs at [hackaday](https://hackaday.io/project/194867-hardware-2fa-totp-authenticator)
 
 ### TODO
 * encrypt profiles
-* support for different intervals
 * add support for more than 32 profiles (needs a rework if more profiles are required. The profiles are copied to ram and there is not enough for more at the moment. If we leave them in flash we can store a lot more)
 * rework the calibration and time settings screens
 

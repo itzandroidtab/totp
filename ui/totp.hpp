@@ -62,8 +62,8 @@ namespace menu {
         };
 
         template <typename T, typename G> 
-        void draw_timer(FrameBuffer& frame_buffer, const klib::vector2i position, const klib::time::ms time, const T sin, const G cos) {
-            for (uint32_t i = (time.value * (sin.size / 30)) / 1000; i < sin.size; i++) {
+        void draw_timer(FrameBuffer& frame_buffer, const uint32_t interval, const klib::vector2i position, const klib::time::ms time, const T sin, const G cos) {
+            for (uint32_t i = (time.value * (sin.size / interval)) / 1000; i < sin.size; i++) {
                 const uint32_t index = (sin.size + ((sin.size / 4) * 3) + i) % sin.size;
 
                 const klib::vector2i p = position + klib::vector2i{
@@ -99,12 +99,12 @@ namespace menu {
                 case storage::digit::digits_6:
                     return klib::crypt::totp<hash, 6>::hash(
                         reinterpret_cast<const uint8_t*>(entry.key.data()), 
-                        entry.key.size(), current.value, 30, 0
+                        entry.key.size(), current.value, entry.interval, 0
                     );
                 case storage::digit::digits_8:
                     return klib::crypt::totp<hash, 8>::hash(
                         reinterpret_cast<const uint8_t*>(entry.key.data()), 
-                        entry.key.size(), current.value, 30, 0
+                        entry.key.size(), current.value, entry.interval, 0
                     );  
             }
 
@@ -185,7 +185,10 @@ namespace menu {
                 klib::string::itoa(last_epoch.value, epoch_buf);
 
                 // update the seconds left in this cycle
-                klib::string::itoa(30 - (last_epoch.value % 30), seconds_left_buf);
+                klib::string::itoa(
+                    entries[current].interval - (last_epoch.value % entries[current].interval), 
+                    seconds_left_buf
+                );
 
                 // the time has changed. Mark the totp as changed
                 // to force a update on the buffers
@@ -205,7 +208,7 @@ namespace menu {
 
                 // get the next token
                 const uint32_t next_token = get_token(
-                    entries[current], last_epoch + klib::time::s(30)
+                    entries[current], last_epoch + klib::time::s(entries[current].interval)
                 );
 
                 // copy the token to the buffer and set the width
@@ -307,11 +310,11 @@ namespace menu {
 
             const klib::time::ms runtime = (
                 klib::io::systick<>::get_runtime() - last_update
-            ) + klib::time::s(last_epoch.value % 30);
+            ) + klib::time::s(last_epoch.value % entries[current].interval);
 
             // draw all the circles
             for (uint32_t i = 0; i < sizeof(lookuptable_sin) / sizeof(lookuptable_sin[0]); i++) {
-                draw_timer(frame_buffer, position, runtime, lookuptable_sin[i], lookuptable_cos[i]);
+                draw_timer(frame_buffer, entries[current].interval, position, runtime, lookuptable_sin[i], lookuptable_cos[i]);
             }
 
             // draw the time left in seconds in the circle

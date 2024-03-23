@@ -631,7 +631,17 @@ namespace menu {
                 (*interval_end) = 0x00;
 
                 // convert the string to a number
-                ret.interval = klib::string::stoi(str_end + 1);
+                const uint32_t interval = klib::string::stoi(str_end + 1);
+
+                // check if the interval is valid
+                if ((interval > 180) || (!interval)) {
+                    // invalid, interval is too high or too low. clear the buffers and go to the next one
+                    buffer.clear();
+
+                    continue;
+                }
+
+                ret.interval = interval;
 
                 // get the length of the interval
                 auto digits_end = std::find(interval_end + 1, (buffer.data() + buffer.size()), ',');
