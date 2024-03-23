@@ -237,7 +237,9 @@ namespace menu {
                 screen_base::small_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     "profile", 
-                    klib::vector2i{3, 3} - offset.cast<int32_t>(), 
+                    klib::vector2i{
+                        (240 - static_cast<int32_t>(klib::string::strlen("profile") * screen_base::small_text::font::width)) / 2, 3
+                    } - offset.cast<int32_t>(), 
                     klib::graphics::white
                 );
 
@@ -245,7 +247,10 @@ namespace menu {
                 screen_base::large_text::template draw<FrameBuffer>(
                     frame_buffer, 
                     entries[current].str, 
-                    klib::vector2i{6, 9 + screen_base::small_text::font::height} - offset.cast<int32_t>(), 
+                    klib::vector2i{
+                        (240 - static_cast<int32_t>(klib::string::strlen(entries[current].str) * screen_base::large_text::font::width)) / 2, 
+                        9 + screen_base::small_text::font::height
+                    } - offset.cast<int32_t>(), 
                     klib::graphics::white
                 );
             }
