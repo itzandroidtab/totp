@@ -33,6 +33,7 @@ namespace menu {
 
         klib::time::s last_epoch = {};
         klib::time::ms last_update = {};
+        uint8_t last_interval = 0;
 
         char delta_buf[32] = {};
         char epoch_buf[12] = {};
@@ -181,7 +182,7 @@ namespace menu {
             }
 
             // check if we should update the hashes
-            if (Rtc::get() != last_epoch) {
+            if ((Rtc::get() != last_epoch) || (last_interval != entries[current].interval)) {
                 // store the new epoch value
                 last_epoch = Rtc::get();
 
@@ -200,6 +201,9 @@ namespace menu {
                 // the time has changed. Mark the totp as changed
                 // to force a update on the buffers
                 totp_changed = true;
+
+                // update the last interval
+                last_interval == entries[current].interval;
             }
 
             if (totp_changed) {
