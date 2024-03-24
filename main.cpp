@@ -18,7 +18,6 @@
 #include <io/ssp.hpp>
 #include <io/rtc.hpp>
 #include <io/dma.hpp>
-#include <io/timer.hpp>
 #include <io/usb.hpp>
 #include <io/system.hpp>
 #include <io/flash.hpp>
@@ -27,7 +26,6 @@
 #include <klib/usb/device/keyboard.hpp>
 #include <klib/usb/device/mouse.hpp>
 
-#include <klib/hardware/display/st7735.hpp>
 #include <klib/hardware/display/st7789.hpp>
 #include <klib/graphics/framebuffer.hpp>
 #include <klib/graphics/framebuffer_modifier.hpp>
@@ -39,29 +37,20 @@ namespace target = klib::target;
 constexpr static klib::time::ms screen_timeout = 60'000;
 constexpr static uint32_t fps_frametime = (1'000'000) / 60;
 
-// implement the throw_bad_function_call so we can use std::function
-namespace std {
-    void __throw_bad_function_call() { 
-        while(true) {
-            // do nothing when we have a bad function call
-        }
-    }; 
-}
+// using for the ssp (spi port)
+using ssp = klib::target::io::ssp<klib::target::io::periph::lqfp_80::ssp1<>>;
+
+// using for the display io
+using blk = klib::target::io::pin_out<klib::target::pins::package::lqfp_80::p60>;
+using rst = klib::target::io::pin_out<klib::target::pins::package::lqfp_80::p68>;
+using dc = klib::target::io::pin_out<klib::target::pins::package::lqfp_80::p65>;
+using cs = klib::target::io::pin_out<klib::target::pins::package::lqfp_80::p69>;
 
 int main() {
-    // init the ssp
-    using ssp = target::io::ssp<target::io::periph::lqfp_80::ssp1<>>;
-
-    // init the io for the display
-    using blk = target::io::pin_out<target::pins::package::lqfp_80::p60>;
-    using rst = target::io::pin_out<target::pins::package::lqfp_80::p68>;
-    using dc = target::io::pin_out<target::pins::package::lqfp_80::p65>;
-    using cs = target::io::pin_out<target::pins::package::lqfp_80::p69>;
-
     // using for the rtc clock
     using rtc_periph = target::io::periph::rtc0;
     using rtc = target::io::rtc<rtc_periph>;
-    
+
     // using for the button pin
     using button0 = target::io::pin_in<target::pins::package::lqfp_80::p40>;
     using button1 = target::io::pin_in<target::pins::package::lqfp_80::p39>;
@@ -75,15 +64,18 @@ int main() {
     using usb_massstorage = target::io::usb<target::io::periph::lqfp_80::usb0, 
         klib::usb::device::mass_storage<fat_helper>
     >;
-
+    
     // init all the display hardware and the buttons
     ssp::init<klib::io::spi::mode::mode3, 48'000'000, klib::io::spi::bits::bit_8, true>();
 
+    // init the io needed for the display
     blk::init();
     rst::init();
     dc::init();
     cs::init();
 
+    // enable the backlight and clear the chip select to 
+    // the display so we can talk to it
     blk::set<false>();
     cs::set<false>();
 
@@ -115,9 +107,6 @@ int main() {
         display::init<true, false, klib::graphics::orientation::landscape, false, true>();
     }
     else {
-        // using display = klib::hardware::display::st7735_dma<dma_tx, klib::io::dma::none, ssp, dc, rst, klib::graphics::mode::rgb565, 80, 160, 26, 1>;
-        // using display = klib::hardware::display::st7735<ssp, dc, rst, klib::graphics::mode::rgb565, 160, 80, 1, 26>;
-        // using display = klib::hardware::display::st7789<ssp, dc, rst, klib::graphics::mode::rgb565, 240, 135, 40, 53>;
         display::init<true, false, klib::graphics::orientation::landscape, true, false>();
     }
 
@@ -300,4 +289,213 @@ int main() {
             klib::delay(klib::time::us(fps_frametime - (end_time - current_time).value));
         }
     }
+}
+
+namespace fault {
+    /**
+     * @brief Available fault types
+     * 
+     */
+    enum class type {
+        // vector table entries
+        hardfault = 3,
+        memfault = 4,
+        busfault = 5,
+        usagefault = 6,
+
+        // other fault types. Note: value is outside the 
+        // vector table range
+        functioncall = 256,
+    };
+
+    /**
+     * @brief Hardfault handler that shows a error on the screen
+     * this function initializes the hardware of the displays and
+     * uses a direct framebuffer to prevent using too much ram and
+     * causing another issue
+     * 
+     * @note noinline attribute is to prevent the compiler from 
+     * inlining this in the naked function. When that happens
+     * the error screen does not popup for some reason. 
+     * 
+     * TODO: figure out why this happens
+     * 
+     * @param fault 
+     * @param stack 
+     */
+    void __attribute__ ((noinline)) hardfault_handler_impl(const type fault, const uint32_t stack) {
+        // create a display without dma
+        // TODO: make this sync up with the other display somehow
+        using display = klib::hardware::display::st7789<ssp, dc, rst, klib::graphics::mode::rgb565, 240, 135, 40, 52>;
+
+        // reinit the hardware needed to show something on the display
+        ssp::template init<klib::io::spi::mode::mode3, 48'000'000, klib::io::spi::bits::bit_8, true>();
+
+        // clear the rx fifo just in case there is data left in the fifo after the crash
+        ssp::clear_rx_fifo();
+
+        // init the io needed for the display
+        blk::init();
+        rst::init();
+        dc::init();
+        cs::init();
+
+        // enable the backlight and clear the chip select to 
+        // the display so we can talk to it
+        blk::set<false>();
+        cs::set<false>();
+
+        // just init the screen, no need to flip it
+        display::init<true, false, klib::graphics::orientation::landscape, true, false>();
+
+        // write directly to the display
+        using framebuffer_t = klib::graphics::direct_framebuffer<display, true, 0, 0, display::width, display::height, std::endian::little>;
+        framebuffer_t framebuffer;
+
+        // initialize the framebuffer
+        framebuffer.init();
+
+        // clear the framebuffer
+        framebuffer.clear(klib::graphics::yellow);
+
+        // write the framebuffer to the display
+        framebuffer.flush();
+
+        // fonts to display something on the screen
+        using small_font = klib::graphics::ascii_font_8x8;
+        using small_text = klib::graphics::string<small_font>;
+        using large_font = klib::graphics::ascii_font_16x16;
+        using large_text = klib::graphics::string<large_font>;
+
+        constexpr static char title[] = "Crash detected";
+
+        // write we detected a crash
+        large_text::draw(framebuffer, title, 
+            klib::vector2i{
+                (240 - static_cast<int32_t>(klib::string::strlen(title) * large_text::font::width)) / 2, 3
+            }, klib::graphics::black, klib::graphics::transparent
+        );
+
+        // string to show
+        char buffer[32] = {};
+
+        switch (fault) {
+            case type::functioncall: 
+                klib::string::strcpy(buffer, "Function fault");
+                break;
+            default:
+                // check if we have a stack overflow
+                if ((stack <= reinterpret_cast<uint32_t>(&__stack_start))|| (stack > reinterpret_cast<uint32_t>(&__stack_end))) {
+                    // copy the string to the buffer
+                    klib::string::strcpy(buffer, "Stack overflow SP:");
+
+                    // copy the stack we crashed on to the buffer
+                    klib::string::itoa<klib::base::HEX>(stack, buffer + klib::string::strlen(buffer));
+                }
+                else {
+                    // copy the string to the buffer
+                    klib::string::strcpy(buffer, "Unknown fault:");
+                    klib::string::itoa(static_cast<uint32_t>(fault), buffer + klib::string::strlen(buffer));
+                }
+                break;
+        }
+
+        // check if we need to show the additional line
+        if (klib::string::strlen(buffer)) {
+            // draw the stack pointer we detected
+            small_text::draw(
+                framebuffer, buffer,
+                klib::vector2i{
+                    (240 - static_cast<int32_t>(klib::string::strlen(buffer) * small_text::font::width)) / 2, 40
+                }, 
+                klib::graphics::black, klib::graphics::transparent
+            );
+        }
+
+        // message to display
+        constexpr static char message[] = 
+            "Unplug authenticator\nand replug USB to restart.\n\nIf you keep seeing this error\n"
+            "please report this error to:\n\nkoon.io/totp\n";
+        
+        uint32_t start = 0;
+        uint32_t count = 0;
+
+        // display the strings
+        for (uint32_t i = 0; i < klib::string::strlen(message); i++) {
+            if (message[i] != '\n') {
+                continue;
+            }
+
+            // draw the text
+            small_text::draw(
+                framebuffer, 
+                &message[start], (i - start),
+                klib::vector2i{
+                    (240 - static_cast<int32_t>((i - start) * small_text::font::width)) / 2,
+                    static_cast<int32_t>(56 + (small_text::font::height * count))
+                }, 
+                klib::graphics::black, klib::graphics::transparent
+            );
+
+            // update the start
+            start = i + 1;
+            count++;
+        }
+
+        // write the framebuffer to the display
+        framebuffer.flush();
+    }
+}
+
+/**
+ * @brief Hardfault handler. Called when we crashed
+ * 
+ */
+void __attribute__((__noreturn__, __naked__)) hardfault_handler() {
+    // get the current sp register. Note: this cannot be on the stack
+    // the stack might not be valid at this point
+    const uint32_t sp = __get_MSP();
+
+    // make sure we have a valid stack pointer. At this point we are gonna 
+    // overwrite everything as we cannot recover anyway. (the heap is at
+    // the end of everything)
+    __set_MSP(reinterpret_cast<uint32_t>(&__heap_end));
+
+    // call the hardfault implementation after we have changed the stack pointer
+    fault::hardfault_handler_impl(static_cast<fault::type>(__get_IPSR()), sp);
+
+    // wait until the user unplugs
+    while (true) {
+        // do nothing
+    }
+}
+
+// implement the throw_bad_function_call so we can use std::function
+namespace std {
+    void __throw_bad_function_call() { 
+        // call the hardfault implementation if we ever get here
+        fault::hardfault_handler_impl(
+            fault::type::functioncall, __get_MSP()
+        );
+
+        while(true) {
+            // do nothing when we have a bad function call
+        }
+    }; 
+}
+
+/**
+ * @brief Constructor that gets called before main is called. This 
+ * constructor registers the hardfault_handler as the callback for
+ * every fault we can detect
+ * 
+ */
+void __attribute__((__constructor__)) fault_startup() {
+    // register the hard fault handler for all the faults we 
+    // can detect before we run main. This is so we can catch 
+    // everything main does
+    target::irq::register_irq<target::irq::arm_vector::hard_fault>(hardfault_handler);
+    target::irq::register_irq<target::irq::arm_vector::memory_managagement_fault>(hardfault_handler);
+    target::irq::register_irq<target::irq::arm_vector::bus_fault>(hardfault_handler);
+    target::irq::register_irq<target::irq::arm_vector::usage_fault>(hardfault_handler);
 }
