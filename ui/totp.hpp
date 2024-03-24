@@ -182,16 +182,23 @@ namespace menu {
                 totp_changed = true;
             }
 
+            // get the rtc time
+            const auto time = Rtc::get();
+
             // check if we should update the hashes
-            if ((Rtc::get() != last_epoch) || (last_interval != entries[current].interval)) {
-                // store the new epoch value
-                last_epoch = Rtc::get();
+            if ((time != last_epoch) || (last_interval != entries[current].interval)) {
+                // only update the last epoch and runtime when the
+                // time has changed
+                if (time != last_epoch) {
+                    // store the new epoch value
+                    last_epoch = time;
 
-                // get the runtime for the timing circle
-                last_epoch_runtime = klib::io::systick<>::get_runtime();
+                    // get the runtime for the timing circle
+                    last_epoch_runtime = klib::io::systick<>::get_runtime();
 
-                // update the epoch buffer
-                klib::string::itoa(last_epoch.value, epoch_buf);
+                    // update the epoch buffer
+                    klib::string::itoa(last_epoch.value, epoch_buf);
+                }
 
                 // update the seconds left in this cycle
                 klib::string::itoa(
