@@ -10,7 +10,7 @@ OUTPUT_ARCH(arm);
 /* 
 The stack size used by the application. NOTE: you need to adjust according to your application. 
 */
-STACK_SIZE = 0x4000;
+STACK_SIZE = 0x1000;
 
 /*
 Memories definitions
@@ -18,7 +18,7 @@ Memories definitions
 MEMORY
 {
     rom (rx) : org = 0x00000000 + 8k, len = 256k - 8k - 32k
-    /* Note: The profiles need to be sector alligned. The 
+    /* Note: The profiles need to be sector aligned. The 
        storage erases the whole sector and writes the entries
        back if we changed something. All other data in this
        sector will be lost on changing the entries */
@@ -163,7 +163,7 @@ SECTIONS
         
         PROVIDE(__data_end = .);
         PROVIDE(__data_init_end = LOADADDR(.data));
-    } > ram1 AT > rom
+    } > ram AT > rom
 
     /* Data that needs to be initialized to 0 */
     .bss (NOLOAD) :
@@ -178,7 +178,7 @@ SECTIONS
         . = ALIGN(4);
 
         PROVIDE(__bss_end = .);
-    } > ram1
+    } > ram
 
     /* Heap segment */
     .heap (NOLOAD) :

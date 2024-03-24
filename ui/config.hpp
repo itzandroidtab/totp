@@ -194,6 +194,37 @@ namespace menu {
         constexpr static char config_end[] = "EOF\r\n";
 
         /**
+         * @brief Structure to notify the user something changed
+         * 
+         */
+        struct parse_t {
+            /**
+             * @brief Available results
+             * 
+             */
+            enum result_t {
+                new_entry,
+                deleted_entry,
+                name_error,
+                interval_error,
+                interval_numeric_error,
+                digits_error,
+                digits_numeric_error,
+                key_error,
+                full_error,
+            };
+
+            // message result
+            result_t result;
+
+            // name of the entry that is incorrect
+            char str[sizeof(storage::entry::str)];
+        };
+
+        // array with all the messages we generated
+        static inline klib::dynamic_array<parse_t, Storage::max_entries> messages = {};
+
+        /**
          * @brief Get the line length of a entry
          * 
          * @return uint32_t 
@@ -480,6 +511,26 @@ namespace menu {
         }
 
         /**
+         * @brief Helper function to write a result
+         * 
+         * @param str 
+         * @param result 
+         */
+        static void write_result(const char* str, const parse_t::result_t result) {
+            parse_t res;
+
+            // set the result and copy the string
+            res.result = result;
+            klib::string::strcpy(res.str, str);
+            
+            // check if we have space in the message array
+            if (messages.size() < messages.max_size()) {
+                // write the message
+                messages.push_back(res);
+            }
+        }
+
+        /**
          * @brief Write file implementation. Only works if sectors are in order
          * 
          * @param offset 
@@ -571,6 +622,9 @@ namespace menu {
                             continue;
                         }
 
+                        // notify the user we removed the entry
+                        write_result(entries[i - 1].str, parse_t::deleted_entry);
+
                         // move everything after the current entry back by one
                         for (uint32_t j = i - 1; j < entries.size(); j++) {
                             entries[j] = entries[j + 1];
@@ -607,6 +661,13 @@ namespace menu {
 
                 // check for the size
                 if ((str_end - buffer.data()) >= sizeof(storage::entry::str)) {
+                    // copy the first part of the name as the profile name
+                    char name[sizeof(storage::entry::str)] = {};
+                    std::copy_n(buffer.data(), (sizeof(name) - 1), name);
+
+                    // write the error
+                    write_result(name, parse_t::interval_error);
+
                     // invalid, clear the buffer and go to the next one
                     buffer.clear();
 
@@ -621,6 +682,9 @@ namespace menu {
 
                 // check if all the characters in the item are numbers or spaces
                 if (!is_number_range(str_end + 1, (interval_end - (str_end + 1)))) {
+                    // write the error
+                    write_result(ret.str, parse_t::interval_numeric_error);
+
                     // invalid, clear the buffer and go to the next one
                     buffer.clear();
 
@@ -635,6 +699,9 @@ namespace menu {
 
                 // check if the interval is valid
                 if ((interval > 180) || (!interval)) {
+                    // write the error
+                    write_result(ret.str, parse_t::interval_error);
+
                     // invalid, interval is too high or too low. clear the buffers and go to the next one
                     buffer.clear();
 
@@ -648,6 +715,9 @@ namespace menu {
 
                 // check if all the characters in the item are numbers or spaces
                 if (!is_number_range(interval_end + 1, (digits_end - (interval_end + 1)))) {
+                    // write the error
+                    write_result(ret.str, parse_t::digits_numeric_error);
+
                     // invalid, clear the buffer and go to the next one
                     buffer.clear();
 
@@ -661,6 +731,9 @@ namespace menu {
                 ret.digits = static_cast<storage::digit>(klib::string::stoi(interval_end + 1));
 
                 if (!storage::is_valid(ret.digits)) {
+                    // write the error
+                    write_result(ret.str, parse_t::digits_error);
+
                     // invalid, clear the buffer and go to the next one
                     buffer.clear();
 
@@ -675,6 +748,9 @@ namespace menu {
                     const uint32_t size = entries.size();
 
                     if (size >= entries.max_size()) {
+                        // write the error
+                        write_result(ret.str, parse_t::full_error);
+
                         // buffer is full. Do not write to it
                         buffer.clear();
 
@@ -686,8 +762,13 @@ namespace menu {
 
                     // add our entry to the entries
                     entries.push_back(ret);
+
+                    // write the result
+                    write_result(ret.str, parse_t::new_entry);
                 }
                 else if (res == parse_result::unchanged) {
+                    bool found = false;
+
                     // search what entry this is
                     for (uint32_t i = 0; i < entries.size(); i++) {
                         if (std::strncmp(entries[i].str, ret.str, sizeof(storage::entry::str) - 1) != 0) {
@@ -696,9 +777,22 @@ namespace menu {
 
                         // we have a match
                         valid_entries[i] = true;
+                        found = true;
 
                         break;
                     } 
+
+                    // for some reason we could not find a unchanged entry.
+                    // give the user some error. They probably used *** as
+                    // a secret key 
+                    if (!found) {
+                        // write the error
+                        write_result(ret.str, parse_t::key_error);
+                    }
+                }
+                else {
+                    // write the error
+                    write_result(ret.str, parse_t::key_error);
                 }
 
                 // we parsed the data clear it for the next line
@@ -758,19 +852,130 @@ namespace menu {
                 // go back to the previous screen
                 screen_base::buffer.back();
             }
+            else if (buttons.enter == input::state::pressed) {
+                // remove a message if we have one
+                if (!messages.empty()) {
+                    // disable the interrupts while we remove something 
+                    // from the array
+                    klib::target::disable_irq();
+
+                    // remove the last message we got
+                    messages.pop_back();
+
+                    // enable the interrupts again after we have removed 
+                    // it
+                    klib::target::enable_irq();
+                }
+            }
         }
 
         virtual void draw(FrameBuffer& frame_buffer, const klib::vector2u& offset) override {
             // clear the background black
             frame_buffer.clear(klib::graphics::black);
 
+            // flag if we have messages to display
+            const bool has_message = !messages.empty();
+
+            // header to display
+            constexpr static char header[] = "USB mode";
+            constexpr static uint32_t header_offset = (240 - static_cast<int32_t>(klib::string::strlen(header) * screen_base::large_text::font::width)) / 2;
+
+            // set the position based on if we have errors
+            const klib::vector2i header_position = (has_message ? 
+                klib::vector2i{header_offset, 3} : klib::vector2i{header_offset, 60}
+            );
+
             // draw the current token using the large font
-            screen<FrameBuffer>::large_text::template draw<FrameBuffer>(
-                frame_buffer, 
-                "USB mode", 
-                klib::vector2i{60, 60} - offset.cast<int32_t>(), 
+            screen_base::large_text::template draw<FrameBuffer>(
+                frame_buffer, header, 
+                header_position - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
+
+            // do not continue if we have no messages
+            if (!has_message) {
+                return;
+            }
+
+            // get the last element
+            const auto m = messages.back();
+
+            // buffer to display data
+            char message[32 * 3] = {};
+
+            // show the last message we have
+            switch (m.result) {
+                case parse_t::new_entry:
+                    klib::string::strcpy(message, "Profile added successfully\n");
+                    break;
+                case parse_t::deleted_entry:
+                    klib::string::strcpy(message, "Profile successfully removed\n");
+                    break;
+                case parse_t::name_error:
+                    klib::string::strcpy(message, "Could not parse profile name\nProfile name too long");
+                    break;
+                case parse_t::interval_error:
+                    klib::string::strcpy(message, "Invalid interval, value is\nout of range.\nValid range 1 - 180\n");
+                    break;
+                case parse_t::interval_numeric_error:
+                    klib::string::strcpy(message, "Invalid interval, non\nnumeric characters detected\n");
+                    break;
+                case parse_t::digits_error:
+                    klib::string::strcpy(message, "Invalid TOTP digits detected\nsupported values are 6 and 8\n");
+                    break;
+                case parse_t::digits_numeric_error:
+                    klib::string::strcpy(message, "Invalid TOTP digits, non\nnumeric characters detected\n");
+                    break;
+                case parse_t::key_error:
+                    klib::string::strcpy(message, "Could not parse secret key\n");
+                    break;
+                case parse_t::full_error:
+                    klib::string::strcpy(message, "Could not add any more\nprofiles (no space)\n");
+                    break;
+                default:
+                    // unknown message. Skip
+                    break;
+            }
+
+            // buffer to display the profile name
+            char profile[32] = "Profile: ";
+            klib::string::strcat(profile, m.str);
+
+            // draw the profile
+            screen_base::small_text::template draw<FrameBuffer>(
+                frame_buffer, profile, 
+                klib::vector2i{
+                    (240 - static_cast<int32_t>(klib::string::strlen(profile) * screen_base::small_text::font::width)) / 2, 40
+                } - offset.cast<int32_t>(), 
+                klib::graphics::white
+            );
+
+            uint32_t start = 0;
+            uint32_t count = 0;
+
+            // display the strings
+            for (uint32_t i = 0; i < klib::string::strlen(message); i++) {
+                if (message[i] != '\n') {
+                    continue;
+                }
+
+                // get the length of the string
+                const uint32_t length = i - start;
+
+                // draw the message
+                screen_base::small_text::template draw<FrameBuffer>(
+                    frame_buffer, &message[start], length,
+                    klib::vector2i{
+                        (240 - static_cast<int32_t>(length * screen_base::small_text::font::width)) / 2, 
+                        static_cast<int32_t>(56 + (screen_base::small_text::font::height * count))
+                    } - offset.cast<int32_t>(), 
+                    klib::graphics::white
+                );
+
+                // update the start
+                start = i + 1;
+                count++;
+            }
         }
     };
 }
