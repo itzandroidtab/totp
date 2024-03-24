@@ -812,6 +812,9 @@ namespace menu {
             // wait a bit to give the host time to detect it
             klib::delay<>(klib::time::ms(500));
 
+            // clear the messages array
+            messages.clear();
+
             // initialize the filesystem
             FatHelper::filesystem::init("KLIB");
 
