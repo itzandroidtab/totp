@@ -32,7 +32,8 @@ namespace menu {
         using screen_base = screen<FrameBuffer>;
 
         klib::time::s last_epoch = {};
-        klib::time::ms last_update = {};
+        klib::time::ms last_runtime = {};
+        klib::time::ms last_epoch_runtime = {};
         uint8_t last_interval = 0;
 
         char delta_buf[32] = {};
@@ -187,7 +188,7 @@ namespace menu {
                 last_epoch = Rtc::get();
 
                 // get the runtime for the timing circle
-                last_update = klib::io::systick<>::get_runtime();
+                last_epoch_runtime = klib::io::systick<>::get_runtime();
 
                 // update the epoch buffer
                 klib::string::itoa(last_epoch.value, epoch_buf);
@@ -203,7 +204,7 @@ namespace menu {
                 totp_changed = true;
 
                 // update the last interval
-                last_interval == entries[current].interval;
+                last_interval = entries[current].interval;
             }
 
             if (totp_changed) {
@@ -232,6 +233,9 @@ namespace menu {
 
             // get the delta as a string
             klib::string::itoa(delta.value, delta_buf);
+
+            // set the last time we updated
+            last_runtime = klib::io::systick<>::get_runtime();
         }
 
         virtual void draw(FrameBuffer& frame_buffer, const klib::vector2u& offset) override {
@@ -320,8 +324,10 @@ namespace menu {
             } - offset.cast<int32_t>();
 
             const klib::time::ms runtime = (
-                klib::io::systick<>::get_runtime() - last_update
-            ) + klib::time::s(last_epoch.value % entries[current].interval);
+                (last_runtime - last_epoch_runtime) + static_cast<klib::time::ms>(
+                    klib::time::s(last_epoch.value % entries[current].interval)
+                )
+            );
 
             // draw all the circles
             for (uint32_t i = 0; i < sizeof(lookuptable_sin) / sizeof(lookuptable_sin[0]); i++) {
