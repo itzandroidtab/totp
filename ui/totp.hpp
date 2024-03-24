@@ -117,6 +117,13 @@ namespace menu {
             current(0)
         {}
 
+        virtual void activate(const screen_id id) override {
+            // check if we need to reset the current index
+            if (current >= Storage::get_entries().size()) {
+                current = 0;
+            }
+        }
+
         virtual void main(const klib::time::us delta, const input::buttons& buttons) override {
             bool totp_changed = false;
 
