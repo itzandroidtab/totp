@@ -14,6 +14,12 @@ add_executable(klib_project
     ${SOURCES} ${HEADERS}
 )
 
+# enable LTO
+target_compile_options(klib PUBLIC "-flto")
+target_compile_options(klib PUBLIC "-fuse-linker-plugin")
+target_link_options(klib PUBLIC "-flto")
+target_link_options(klib PUBLIC "-fuse-linker-plugin")
+
 # set the output filename
 set_target_properties(klib_project PROPERTIES OUTPUT_NAME "klib" SUFFIX ".elf")
 
