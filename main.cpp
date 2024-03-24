@@ -129,7 +129,8 @@ int main() {
     constexpr static uint32_t move_height = 10;
     using fb_t = klib::graphics::movable_framebuffer<display, display::mode, 0, 0, display::width, move_height, std::endian::big>;
 
-    static std::array<fb_t, 2> framebuffer = {fb_t(), fb_t()};
+    // this needs to be static to move it to RAM1. 
+    static std::array<fb_t, 2> framebuffer __attribute__ ((section(".framebuffer"))) = {fb_t(), fb_t()};
 
     // init all the framebuffers
     for (auto& fb: framebuffer) {

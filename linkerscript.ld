@@ -139,6 +139,15 @@ SECTIONS
         PROVIDE(__stack_end = .);
     } > ram
 
+    /* memory used for the framebuffer */
+    .framebuffer (NOLOAD) :
+    {
+        . = ALIGN(4);
+        /* vector table */
+        KEEP(*(.framebuffer .framebuffer.*));
+        . = ALIGN(4);
+    } > ram1
+
     /* Data that needs to be initialized to a value different than 0 */
     .data :
     {
