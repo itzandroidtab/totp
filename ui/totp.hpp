@@ -41,6 +41,7 @@ namespace menu {
         char current_token_buf[16] = {};
         char next_token_buf[16] = {};
         char seconds_left_buf[7] = {};
+        char index_buf[6] = {};
 
         constexpr static uint32_t step_size = 2;
         using lookuptable = klib::lookuptable<360 / step_size, int>;
@@ -239,6 +240,22 @@ namespace menu {
                 klib::string::set_width(next_token_buf, 
                     static_cast<uint8_t>(entry.digits), '0'
                 );
+
+                // get the width we should use for the index string
+                const uint32_t index_width = klib::string::detail::count_chars(entries.size());
+
+                // only display it while we have less than 100 entries
+                if (entries.size() > 1 && index_width <= 2) {
+                    // copy the current index to the buffer
+                    klib::string::itoa(current + 1, index_buf);
+                    klib::string::set_width(index_buf, index_width, ' ');
+
+                    klib::string::strcat(index_buf, "\\");
+
+                    char *const ptr = index_buf + klib::string::strlen(index_buf);
+                    klib::string::itoa(entries.size(), ptr);
+                    klib::string::set_width(ptr, index_width, ' ');
+                }
             }
 
             // get the delta as a string
@@ -354,6 +371,14 @@ namespace menu {
                     (204 + 1) - static_cast<int32_t>((klib::string::strlen(seconds_left_buf) * screen_base::small_text::font::width) / 2), 
                     (68 + 1) - (screen_base::small_text::font::height / 2)
                 } - offset.cast<int32_t>(), 
+                klib::graphics::white
+            );
+
+            // draw using the large font
+            screen_base::small_text::template draw<FrameBuffer>(
+                frame_buffer,
+                index_buf, 
+                klib::vector2i{3, 3} - offset.cast<int32_t>(), 
                 klib::graphics::white
             );
         }
