@@ -185,8 +185,11 @@ namespace menu {
             // get the rtc time
             const auto time = Rtc::get();
 
+            // get a reference to the current entry
+            const auto& entry = entries[current];
+
             // check if we should update the hashes
-            if ((time != last_epoch) || (last_interval != entries[current].interval)) {
+            if ((time != last_epoch) || (last_interval != entry.interval)) {
                 // only update the last epoch and runtime when the
                 // time has changed
                 if (time != last_epoch) {
@@ -202,7 +205,7 @@ namespace menu {
 
                 // update the seconds left in this cycle
                 klib::string::itoa(
-                    entries[current].interval - (last_epoch.value % entries[current].interval), 
+                    entry.interval - (last_epoch.value % entry.interval), 
                     seconds_left_buf
                 );
 
@@ -211,30 +214,30 @@ namespace menu {
                 totp_changed = true;
 
                 // update the last interval
-                last_interval = entries[current].interval;
+                last_interval = entry.interval;
             }
 
             if (totp_changed) {
                 // update the tokens
-                const uint32_t current_token = get_token(entries[current], last_epoch);
+                const uint32_t current_token = get_token(entry, last_epoch);
 
                 // copy the token to the buffer and set the width
                 // based on the amount of digits
                 klib::string::itoa(current_token, current_token_buf);
                 klib::string::set_width(current_token_buf, 
-                    static_cast<uint8_t>(entries[current].digits), '0'
+                    static_cast<uint8_t>(entry.digits), '0'
                 );
 
                 // get the next token
                 const uint32_t next_token = get_token(
-                    entries[current], last_epoch + klib::time::s(entries[current].interval)
+                    entry, last_epoch + klib::time::s(entry.interval)
                 );
 
                 // copy the token to the buffer and set the width
                 // based on the amount of digits
                 klib::string::itoa(next_token, next_token_buf);
                 klib::string::set_width(next_token_buf, 
-                    static_cast<uint8_t>(entries[current].digits), '0'
+                    static_cast<uint8_t>(entry.digits), '0'
                 );
             }
 
@@ -253,11 +256,14 @@ namespace menu {
                 return;
             }
 
+            // get a reference to the current entry
+            const auto& entry = entries[current];
+
             // clear the background
             frame_buffer.clear(klib::graphics::black);
 
             // draw the entry text with a small font above the token if we have any
-            if (klib::string::strlen(entries[current].str)) {
+            if (klib::string::strlen(entry.str)) {
                 // draw the title at the top of the screen
                 screen_base::small_text::template draw<FrameBuffer>(
                     frame_buffer, 
@@ -271,9 +277,9 @@ namespace menu {
                 // draw the profile name below the title
                 screen_base::large_text::template draw<FrameBuffer>(
                     frame_buffer, 
-                    entries[current].str, 
+                    entry.str, 
                     klib::vector2i{
-                        (240 - static_cast<int32_t>(klib::string::strlen(entries[current].str) * screen_base::large_text::font::width)) / 2, 
+                        (240 - static_cast<int32_t>(klib::string::strlen(entry.str) * screen_base::large_text::font::width)) / 2, 
                         9 + screen_base::small_text::font::height
                     } - offset.cast<int32_t>(), 
                     klib::graphics::white
@@ -332,13 +338,13 @@ namespace menu {
 
             const klib::time::ms runtime = (
                 (last_runtime - last_epoch_runtime) + static_cast<klib::time::ms>(
-                    klib::time::s(last_epoch.value % entries[current].interval)
+                    klib::time::s(last_epoch.value % entry.interval)
                 )
             );
 
             // draw all the circles
             for (uint32_t i = 0; i < sizeof(lookuptable_sin) / sizeof(lookuptable_sin[0]); i++) {
-                draw_timer(frame_buffer, entries[current].interval, position, runtime, lookuptable_sin[i], lookuptable_cos[i]);
+                draw_timer(frame_buffer, entry.interval, position, runtime, lookuptable_sin[i], lookuptable_cos[i]);
             }
 
             // draw the time left in seconds in the circle

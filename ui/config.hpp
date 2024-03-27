@@ -625,13 +625,8 @@ namespace menu {
                         // notify the user we removed the entry
                         write_result(entries[i - 1].str, parse_t::deleted_entry);
 
-                        // move everything after the current entry back by one
-                        for (uint32_t j = i - 1; j < entries.size(); j++) {
-                            entries[j] = entries[j + 1];
-                        }
-
-                        // remove the last entry
-                        entries.pop_back();
+                        // erase the current entry
+                        entries.erase(&entries[i - 1]);
                     }
 
                     // write the buffer to memory
@@ -822,9 +817,9 @@ namespace menu {
             const auto entries = Storage::get_entries();
             uint32_t length = 0;
 
-            for (uint32_t i = 0; i < entries.size(); i++) {
+            for (const auto& entry : entries) {
                 // increment the length for the total file size
-                length += get_entry_length(entries[i]);
+                length += get_entry_length(entry);
             }
 
             // add the header size
