@@ -142,6 +142,9 @@ namespace menu {
         }
 
         virtual void draw(FrameBuffer& frame_buffer, const klib::vector2u& offset) override {
+            // clear the background black
+            frame_buffer.clear(klib::graphics::black);
+
             // do nothing on a draw call
         }
     };

@@ -883,7 +883,7 @@ namespace menu {
                 klib::vector2i{header_offset, 3} : klib::vector2i{header_offset, 60}
             );
 
-            // draw the current token using the large font
+            // draw the header using large text
             screen_base::large_text::template draw<FrameBuffer>(
                 frame_buffer, header, 
                 header_position - offset.cast<int32_t>(), 
