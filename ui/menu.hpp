@@ -35,7 +35,7 @@ namespace menu {
         bool partial_top_line = false;
 
         // the previous indexes for the top and bottom
-        klib::vector2i previous_range = {0, max_visible_lines};
+        klib::vector2i previous_range = {0, klib::min(max_visible_lines, Count)};
 
         /**
          * @brief Draw a rectangle at a specific position
@@ -100,7 +100,7 @@ namespace menu {
                 uint32_t items = 0;
 
                 // calculate the other position
-                for (uint32_t i = 0; i < max_visible_lines; i++) {
+                for (uint32_t i = 0; i < klib::min(max_visible_lines, Count); i++) {
                     // get the index to check
                     const int32_t index = above ? (selected + i) : (selected - i);
 
@@ -145,7 +145,7 @@ namespace menu {
             const uint32_t bottom = previous_range.y + ((!partial_top_line) && has_partial_lines);
 
             // check if the top is still valid
-            for (uint32_t index = top; index < bottom; index++) {
+            for (uint32_t index = top; index < bottom && index < Count; index++) {
                 // check if the option is hidden
                 if (hidden != nullptr && hidden[index]) {
                     // skip the option if it is hidden
