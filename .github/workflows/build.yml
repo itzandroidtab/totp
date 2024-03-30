@@ -59,14 +59,14 @@ jobs:
 
       - name: generating header
         run: |
-          mkdir -p ${{github.workspace}}/targets/${{matrix.cpu}}/docs
-          wget -q -O ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
+          mkdir -p ${{github.workspace}}/targets/chip/${{matrix.cpu}}/docs
+          wget -q -O ${{github.workspace}}/targets/chip/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd https://raw.githubusercontent.com/itzandroidtab/klib-svd/master/${{matrix.cpu}}.svd
           wget -q -O ${{github.workspace}}/svdconv.tbz2 https://github.com/Open-CMSIS-Pack/devtools/releases/download/tools%2Fsvdconv%2F3.3.44/svdconv-3.3.44-linux64-amd64.tbz2
           tar -xf ${{github.workspace}}/svdconv.tbz2 
           chmod +x ${{github.workspace}}/svdconv
           
-          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/${{matrix.cpu}}/ > /dev/null || true
-          sed -i '/#include "system_/d' ${{github.workspace}}/targets/${{matrix.cpu}}/${{matrix.cpu}}.h
+          ${{github.workspace}}/svdconv ${{github.workspace}}/targets/chip/${{matrix.cpu}}/docs/${{matrix.cpu}}.svd --generate=header -o ${{github.workspace}}/targets/chip/${{matrix.cpu}}/ > /dev/null || true
+          sed -i '/#include "system_/d' ${{github.workspace}}/targets/chip/${{matrix.cpu}}/${{matrix.cpu}}.h
       
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
