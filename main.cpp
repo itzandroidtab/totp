@@ -8,6 +8,7 @@
 #include "ui/numeric_popup.hpp"
 #include "ui/popup.hpp"
 #include "ui/time.hpp"
+#include "ui/timezone.hpp"
 #include "ui/calibration.hpp"
 #include "ui/config.hpp"
 #include "ui/mouse.hpp"
@@ -147,6 +148,7 @@ int main() {
     menu::totp<fb_t, storage, rtc, rtc_periph, usb_keyboard> totp = {};
     menu::settings<fb_t> settings = {};
     menu::time<fb_t, rtc_periph, rtc> time(numeric_popup);
+    menu::timezone<fb_t, rtc_periph> timezone(numeric_popup);
     menu::calibration<fb_t, rtc_periph> calibration(numeric_popup, string_popup);
     menu::config<
         fb_t, storage, fat_helper, 
@@ -160,6 +162,7 @@ int main() {
         &totp,
         &settings,
         &time,
+        &timezone,
         &calibration,
         &config,
         &mouse,

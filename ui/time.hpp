@@ -12,8 +12,7 @@ namespace menu {
         using screen_base = screen<FrameBuffer>;
 
         enum class steps: uint8_t {
-            timezone = 0,
-            year,
+            year = 0,
             month,
             day,
             hour,
@@ -46,9 +45,6 @@ namespace menu {
         void next(int32_t value) {
             // store the value
             switch (current) {
-                case steps::timezone:
-                    date.timezone = static_cast<int8_t>(value);
-                    break;
                 case steps::year:
                     date.year = static_cast<uint16_t>(value);
                     break;
@@ -67,12 +63,6 @@ namespace menu {
                 case steps::second:
                     date.second = static_cast<uint8_t>(value);
                     
-                    // store the timezone in the rtc registers
-                    RtcPeriph::port->GPREG4 = (
-                        (RtcPeriph::port->GPREG4 & (~0x1f)) | 
-                        static_cast<uint8_t>(date.timezone + 12)
-                    );
-
                     // we are done. Update the RTC time
                     Rtc::set(klib::io::rtc::datetime_to_epoch(
                         date.year, date.month, 
@@ -96,7 +86,7 @@ namespace menu {
         }
 
         void cancel() {
-            if (current == steps::timezone) {
+            if (current == steps::year) {
                 // go back to the menu
                 screen_base::buffer.back();
 
@@ -118,13 +108,6 @@ namespace menu {
 
             // get what state we are in
             switch (current) {
-                case steps::timezone:
-                    popup.configure(
-                        "GMT", (RtcPeriph::port->GPREG4 & 0x1f) - 12, 
-                        -12, 14, [&](int32_t value){next(value);},
-                        [&](){cancel();}
-                    );
-                    break;
                 case steps::year:
                     popup.configure(
                         "Year", t.year,
@@ -180,15 +163,18 @@ namespace menu {
 
     public:
         time(numeric_popup<FrameBuffer>& popup): 
-            current(steps::timezone), date{}, popup(popup)
+            current(steps::year), date{}, popup(popup)
         {}
 
         virtual void main(const klib::time::us delta, const input::buttons& buttons) override {
+            // set the timezone we have in the register
+            date.timezone = (RtcPeriph::port->GPREG4 & 0x1f) - 12;
+
             // change to the first step when we are called. We 
             // are only called from the settings menu. The
             // popup callbacks will skip this by changing 
             // directly to the new popup
-            current = steps::timezone;
+            current = steps::year;
 
             // show the first screen
             change_screen(current);

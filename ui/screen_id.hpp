@@ -6,6 +6,7 @@ namespace menu {
         totp,
         settings,
         time,
+        timezone,
         calibration,
         config,
         mouse,

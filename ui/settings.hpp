@@ -16,6 +16,7 @@ namespace menu {
         enum class item: uint8_t {
             config = 0,
             time,
+            timezone,
             calibration,
             mouse,
             version,
@@ -33,6 +34,7 @@ namespace menu {
         constexpr static char labels[label_count][16] = {
             "usb mode",
             "time",
+            "timezone",
             "rtc cal",
             "usb jiggler",
             "version",
@@ -53,6 +55,9 @@ namespace menu {
                 switch (selection) {
                     case item::time:
                         screen_base::buffer.change(screen_id::time);
+                        break;
+                    case item::timezone:
+                        screen_base::buffer.change(screen_id::timezone);
                         break;
                     case item::calibration:
                         screen_base::buffer.change(screen_id::calibration);
