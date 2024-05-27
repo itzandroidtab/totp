@@ -144,7 +144,7 @@ int main() {
     // up the boot time and will show the splash screen
     // until we are done initializing. 
     menu::splash<fb_t, storage, rtc, usb_keyboard> splash = {};
-    menu::totp<fb_t, storage, rtc, usb_keyboard> totp = {};
+    menu::totp<fb_t, storage, rtc, rtc_periph, usb_keyboard> totp = {};
     menu::settings<fb_t> settings = {};
     menu::time<fb_t, rtc_periph, rtc> time(numeric_popup);
     menu::calibration<fb_t, rtc_periph> calibration(numeric_popup, string_popup);

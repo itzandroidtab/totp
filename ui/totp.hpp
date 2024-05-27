@@ -25,7 +25,7 @@ namespace menu::detail {
 }
 
 namespace menu {
-    template <typename FrameBuffer, typename Storage, typename Rtc, typename Usb>
+    template <typename FrameBuffer, typename Storage, typename Rtc, typename RtcPeriph, typename Usb>
     class totp: public screen<FrameBuffer> {
     protected:
         using hash = klib::crypt::sha1;
@@ -117,7 +117,7 @@ namespace menu {
 
     public:
         totp():
-            current(0)
+            current(((RtcPeriph::port->GPREG4 >> 5) & 0x1f))
         {}
 
         virtual void activate(const screen_id id) override {
@@ -165,6 +165,9 @@ namespace menu {
                     current--;
                 }
 
+                // update the rtc register
+                RtcPeriph::port->GPREG4 = (RtcPeriph::port->GPREG4 & ~(0x1f << 5)) | ((current & 0x1f) << 5);
+
                 // mark the totp as changed to force a redraw of
                 // all the text buffers
                 totp_changed = true;
@@ -177,6 +180,9 @@ namespace menu {
                 else {
                     current++;
                 }
+
+                // update the rtc register
+                RtcPeriph::port->GPREG4 = (RtcPeriph::port->GPREG4 & ~(0x1f << 5)) | ((current & 0x1f) << 5);
 
                 // mark the totp as changed to force a redraw of
                 // all the text buffers
