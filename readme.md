@@ -25,7 +25,7 @@ Images can be found in the project logs at [hackaday](https://hackaday.io/projec
 TOTP uses [klib](https://github.com/itzandroidtab/klib). This repo can be cloned in the klib project folder. See [build.yml](./.github/workflows/build.yml) for more info on compiling this project.
 
 ### Extra
-Is intended to be used with [USB dfu bootloader](https://github.com/itzandroidtab/dfu_bootloader). To build without bootloader support delete `set(TARGET_LINKERSCRIPT ...)` from the `CMakeLists.txt` in this project.
+Is intended to be used with [USB dfu bootloader](https://github.com/itzandroidtab/dfu_bootloader). To build without bootloader support remove the `+ 8k` and `- 8k` from line 20 in the `linkerscript.ld` of this project.
 
 The LPC1756 does not have enough ram to hold a full framebuffer (240 * 135 * 2 = 64'800 bytes). To work around this issue, we use 2 smaller framebuffers we alternate between. While one framebuffer is being transferred to the screen using DMA we fill the other.
 
