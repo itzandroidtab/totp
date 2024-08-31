@@ -44,7 +44,7 @@ namespace menu {
         char index_buf[6] = {};
 
         constexpr static uint32_t step_size = 2;
-        using lookuptable = klib::lookuptable<360 / step_size, int>;
+        using lookuptable = klib::lookuptable<360 / step_size, int8_t>;
 
         constexpr static lookuptable lookuptable_sin[] = {
             lookuptable(detail::sin_scaled<20, step_size>),
