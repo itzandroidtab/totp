@@ -29,6 +29,6 @@ Is intended to be used with [USB dfu bootloader](https://github.com/itzandroidta
 
 The LPC1756 does not have enough ram to hold a full framebuffer (240 * 135 * 2 = 64'800 bytes). To work around this issue, we use 2 smaller framebuffers we alternate between. While one framebuffer is being transferred to the screen using DMA we fill the other.
 
-To make it easier (for me) the whole screen is written to this smaller framebuffer. The pixels that do not fit the framebuffer are thrown away. This does waste CPU cycles but is not limiting the framerate. Filling a full frame with pixels takes around 6 milliseconds. Writing a full frame of framebuffers takes around 11 milliseconds. This limits the maximum framerate to ≈ 85FPS. To get a consistant frame rate there is a limit of 60FPS.
+To make it easier (for me) the whole screen is written to this smaller framebuffer. The pixels that do not fit the framebuffer are thrown away. This does waste CPU cycles but is not limiting the framerate. Filling a full frame with pixels takes around 6 milliseconds. Writing a full frame of framebuffers to the display takes around 11 milliseconds. This limits the maximum framerate to ≈ 85FPS. To get a consistant frame rate there is a limit of 60FPS.
 
 The main screen takes the longest to draw. This is caused by the amount of pixels of the circle it needs to draw. The circle is generated on compile time to work around that the LPC175x family does not have a FPU. These generated pixels use 8640 bytes of flash.
