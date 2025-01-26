@@ -83,7 +83,7 @@ int main() {
     // init the dma engine
     using dma_periph = target::io::periph::dma0;
     using dma = target::io::dma<dma_periph>;
-    dma::init<false>();
+    dma::init<std::endian::big>();
 
     // create the dma channels
     using dma_tx = target::io::dma_channel<dma_periph, 0, klib::io::dma::memory, ssp>;
