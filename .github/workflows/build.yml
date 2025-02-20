@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Fetching klib
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: itzandroidtab/klib
       
@@ -40,7 +40,7 @@ jobs:
           path: "${{github.workspace}}/project/"
 
       - name: arm-none-eabi-gcc install
-        uses: carlosperate/arm-none-eabi-gcc-action@v1.6.0
+        uses: carlosperate/arm-none-eabi-gcc-action@v1.8.1
         with:
           release: '12.2.Rel1'
 
