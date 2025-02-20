@@ -80,7 +80,7 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
       - name: Uploading artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         # upload the elf file as a artifact
         with:
           name: ${{matrix.cpu}}
