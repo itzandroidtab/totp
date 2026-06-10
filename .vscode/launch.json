@@ -1,0 +1,45 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Upload Core #0",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/klib.elf",
+            "device": "${config:target_cpu_debug}",
+            "interface": "swd",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "jlink",
+            "numberOfProcessors": 1,
+            "targetProcessor": 0,
+            "rttConfig": {
+                "enabled": true,
+                "address": "auto",
+                "decoders": [
+                    {
+                        "label": "",
+                        "port": 0,
+                        "type": "console"
+                    }
+                ]
+            },
+            "svdFile": "${workspaceFolder}/../klib_other/klib-svd/${config:target_cpu}.svd"
+            // "chainedConfigurations": {
+            //     "enabled": true,
+            //     "waitOnEvent": "postInit",
+            //     "lifeCycleShared": true,
+            //     "launches": [
+            //         {
+            //             "name": "Attach Core #1",
+            //             "folder": "",
+            //             "delayMs": 300
+            //         }
+            //     ],
+            // }
+        },
+    ],
+}

@@ -1,0 +1,29 @@
+{
+    "configurations": [
+        {
+            "name": "gcc-arm",
+            "includePath": [
+                "${workspaceFolder}",
+                "${workspaceFolder}/../targets/arm",
+                "${workspaceFolder}/../klib",
+                "${workspaceFolder}/../targets/chip/${config:target_cpu}"
+            ],
+            "defines": [
+                "TARGET_CPU=${config:target_cpu}",
+                "KLIB_IRQ=irq_ram",
+                "KLIB_DEFAULT_COUT=rtt"
+            ],
+            // "compilerPath": "path",
+            "cStandard": "c17",
+            "cppStandard": "c++23",
+            "configurationProvider": "ms-vscode.cmake-tools",
+            "intelliSenseMode": "gcc-arm",
+            "compilerArgs": [
+                "-nostdlib",
+                "-nodefaultlibs",
+                "-nostartfiles"
+            ]
+        }
+    ],
+    "version": 4
+}
